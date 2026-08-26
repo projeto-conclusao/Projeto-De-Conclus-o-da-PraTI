@@ -1,0 +1,1 @@
+// Protege rotas que precisam de login
