@@ -1,0 +1,67 @@
+package com.achadosedevolvidos.service;
+
+import com.achadosedevolvidos.model.Item;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+
+@Service
+public class MatchEngineService {
+
+    private static final double EARTH_RADIUS_KM = 6371.0;
+
+    // Fórmula da Haversine para calcular a distância física em KM
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+    }
+
+    // Calcula a compatibilidade percentual (0.0 a 100.0)
+    public double calculateMatchScore(Item lostItem, Item foundItem) {
+        // 1. Validar tipos opostos e mesma categoria
+        if (lostItem.getType() == foundItem.getType() || 
+            !lostItem.getCategory().getId().equals(foundItem.getCategory().getId())) {
+            return 0.0;
+        }
+
+        double score = 20.0; // Mesma categoria garante 20%
+
+        // 2. Proximidade Geográfica (Peso de 40%)
+        double distanceKm = calculateDistance(
+                lostItem.getLatitude(), lostItem.getLongitude(),
+                foundItem.getLatitude(), foundItem.getLongitude()
+        );
+
+        if (distanceKm <= 1.0) score += 40.0;
+        else if (distanceKm <= 5.0) score += 30.0;
+        else if (distanceKm <= 15.0) score += 15.0;
+        else if (distanceKm <= 30.0) score += 5.0;
+
+        // 3. Proximidade Temporal (Peso de 25%)
+        long diffDays = Math.abs(Duration.between(lostItem.getEventDate(), foundItem.getEventDate()).toDays());
+
+        if (diffDays <= 1) score += 25.0;
+        else if (diffDays <= 3) score += 18.0;
+        else if (diffDays <= 7) score += 10.0;
+
+        // 4. Correspondência de Título (Peso de 15%)
+        String[] lostTitleWords = lostItem.getTitle().toLowerCase().split("\\s+");
+        String foundTitle = foundItem.getTitle().toLowerCase();
+
+        for (String word : lostTitleWords) {
+            if (word.length() > 3 && foundTitle.contains(word)) {
+                score += 15.0;
+                break;
+            }
+        }
+
+        return Math.min(Math.round(score), 100.0);
+    }
+}
