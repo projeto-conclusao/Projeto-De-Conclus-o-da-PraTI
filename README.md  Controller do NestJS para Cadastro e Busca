@@ -1,45 +1,67 @@
-Controller do NestJS para Cadastro e Busca
+Cadastro e Busca
 
-// src/items/items.controller.ts
+package com.example.api.controller;
 
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
-import { ItemsService } from './items.service';
-import { CreateItemDto } from './dto/create-item.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import com.example.api.dto.CreateItemDto;
+import com.example.api.dto.ItemSearchFilterDto;
+import com.example.api.service.ItemsService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
-@Controller('api/v1/items')
-export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+import java.util.List;
 
-  // Cadastro do Objeto (Telas 04, 05, 06)
-  @Post()
-  @UseGuards(JwtAuthGuard)
-  async create(@Req() req, @Body() createItemDto: CreateItemDto) {
-    return await this.itemsService.createAndRunAnalysis(req.user.id, createItemDto);
-  }
+@RestController
+@RequestMapping("/api/v1/items")
+public class ItemsController {
 
-  // Busca e Filtros com Mapa (Tela 02)
-  @Get('search')
-  async search(
-    @Query('type') type?: string,
-    @Query('categoryId') categoryId?: string,
-    @Query('query') query?: string,
-    @Query('lat') lat?: number,
-    @Query('lng') lng?: number,
-  ) {
-    return await this.itemsService.searchItems({ type, categoryId, query, lat, lng });
-  }
+    private final ItemsService itemsService;
 
-  // Obter Detalhes (Tela 03)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.itemsService.findById(id);
-  }
+    // Injeção de dependência via construtor
+    public ItemsController(ItemsService itemsService) {
+        this.itemsService = itemsService;
+    }
 
-  // Obter Possíveis Correspondências (Telas 07, 08, 09)
-  @Get(':id/matches')
-  @UseGuards(JwtAuthGuard)
-  async getMatches(@Param('id') id: string) {
-    return await this.itemsService.findItemMatches(id);
-  }
+    // Cadastro do Objeto (Telas 04, 05, 06)
+    @PostMapping
+    @PreAuthorize("isAuthenticated()") // Equivalente ao JwtAuthGuard
+    public ResponseEntity<?> create(
+            @AuthenticationPrincipal String userId, // Extrai o ID do usuário autenticado no JWT
+            @Valid @RequestBody CreateItemDto createItemDto
+    ) {
+        var result = itemsService.createAndRunAnalysis(userId, createItemDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    // Busca e Filtros com Mapa (Tela 02)
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng
+    ) {
+        var filters = new ItemSearchFilterDto(type, categoryId, query, lat, lng);
+        var results = itemsService.searchItems(filters);
+        return ResponseEntity.ok(results);
+    }
+
+    // Obter Detalhes (Tela 03)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findOne(@PathVariable("id") String id) {
+        var item = itemsService.findById(id);
+        return ResponseEntity.ok(item);
+    }
+
+    // Obter Possíveis Correspondências (Telas 07, 08, 09)
+    @GetMapping("/{id}/matches")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getMatches(@PathVariable("id") String id) {
+        var matches = itemsService.findItemMatches(id);
+        return ResponseEntity.ok(matches);
+    }
 }
