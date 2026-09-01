@@ -1,28 +1,58 @@
-// src/chat/chat.gateway.ts
+package com.achadosedevolvidos.model;
 
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { ChatService } from './chat.service';
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
-@WebSocketGateway({ cors: { origin: '*' }, namespace: '/ws/chat' })
-export class ChatGateway {
-  @WebSocketServer()
-  server: Server;
+@Entity
+@Table(name = "items")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Item {
 
-  constructor(private readonly chatService: ChatService) {}
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-  @SubscribeMessage('join_conversation')
-  handleJoinRoom(@MessageBody('conversationId') conversationId: string, @ConnectedSocket() client: Socket) {
-    client.join(`room_${conversationId}`);
-  }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-  @SubscribeMessage('send_message')
-  async handleSendMessage(
-    @MessageBody() data: { conversationId: string; senderId: string; content: string },
-  ) {
-    const message = await this.chatService.saveMessage(data.conversationId, data.senderId, data.content);
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemType type; // PERDIDO, ENCONTRADO
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemStatus status = ItemStatus.ANALISANDO;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    private String locationText;
+    private Double latitude;
+    private Double longitude;
     
-    // Transmite a mensagem em tempo real para todos na sala da conversa
-    this.server.to(`room_${data.conversationId}`).emit('new_message', message);
-  }
+    private LocalDateTime eventDate;
+    
+    @Column(updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemImage> images;
+
+    public enum ItemType { PERDIDO, ENCONTRADO }
+    public enum ItemStatus { ANALISANDO, PROCURANDO, POSSIVEL_MATCH, RESOLVIDO, INATIVO }
 }
