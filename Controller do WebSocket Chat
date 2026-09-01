@@ -1,0 +1,30 @@
+package com.achadosedevolvidos.controller;
+
+import com.achadosedevolvidos.dto.ChatMessageDto;
+import com.achadosedevolvidos.model.Message;
+import com.achadosedevolvidos.service.ChatService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+
+@Controller
+@RequiredArgsConstructor
+public class ChatController {
+
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ChatService chatService;
+
+    @MessageMapping("/chat.sendMessage/{conversationId}")
+    public void sendMessage(
+            @DestinationVariable String conversationId,
+            @Payload ChatMessageDto dto
+    ) {
+        Message savedMessage = chatService.saveMessage(conversationId, dto);
+        
+        // Envia a mensagem em tempo real para o canal específico da conversa
+        messagingTemplate.convertAndSend("/topic/conversation/" + conversationId, savedMessage);
+    }
+}
