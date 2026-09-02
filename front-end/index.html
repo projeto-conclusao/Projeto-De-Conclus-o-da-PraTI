@@ -1,107 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central de Objetos Perdidos</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <div class="app">
-    <header class="topo">
-      <h1>🔎 Central de Objetos Perdidos</h1>
-      <p>Cadastre o que você perdeu ou encontrou. O sistema cruza os registros e sugere as
-        correspondências mais prováveis automaticamente.</p>
-    </header>
-
-    <main class="conteudo">
-      <!-- ===== Formulário de cadastro ===== -->
-      <aside class="coluna-esquerda">
-        <form id="formCadastro" class="card formulario">
-          <h2 id="tituloFormulario">Cadastrar objeto</h2>
-
-          <div class="segmentado" id="segmentadoTipo">
-            <button type="button" class="ativo perdido" data-tipo="PERDIDO">Perdi um objeto</button>
-            <button type="button" data-tipo="ENCONTRADO">Encontrei um objeto</button>
-          </div>
-          <input type="hidden" id="campoTipo" value="PERDIDO">
-          <input type="hidden" id="campoIdEdicao" value="">
-
-          <label>
-            Categoria
-            <select id="campoCategoria" required></select>
-          </label>
-
-          <label>
-            Descrição
-            <textarea id="campoDescricao" rows="3" placeholder="Descreva o objeto com o máximo de detalhes possível" required></textarea>
-          </label>
-
-          <label>
-            Local (onde foi perdido ou encontrado)
-            <input type="text" id="campoLocalizacao" placeholder="Ex: Praça Central, Tupandi" required>
-          </label>
-
-          <label>
-            Características (separadas por vírgula)
-            <input type="text" id="campoCaracteristicas" placeholder="Ex: preto, samsung, capinha transparente">
-          </label>
-
-          <div class="linha">
-            <label>
-              Seu nome
-              <input type="text" id="campoNome" required>
-            </label>
-            <label>
-              Telefone de contato
-              <input type="text" id="campoTelefone" placeholder="(00) 00000-0000" required>
-            </label>
-          </div>
-
-          <p id="mensagemForm" class="mensagem" hidden></p>
-
-          <div class="acoes-formulario">
-            <button type="submit" id="botaoSubmit" class="botao-principal">Cadastrar</button>
-            <button type="button" id="botaoCancelarEdicao" class="botao-secundario" hidden>Cancelar edição</button>
-          </div>
-        </form>
-
-        <div class="card dados-arquivo">
-          <h3>Salvar / carregar dados</h3>
-          <p class="ajuda">Os itens ficam só nesta aba, enquanto ela estiver aberta. Pra não
-            perder o que foi cadastrado, salve num arquivo e carregue de novo depois.</p>
-          <div class="botoes-arquivo">
-            <button type="button" id="btnSalvarArquivo" class="botao-secundario">💾 Salvar em arquivo</button>
-            <label class="botao-secundario botao-arquivo-label">
-              📂 Carregar de arquivo
-              <input type="file" id="inputCarregarArquivo" accept="application/json" hidden>
-            </label>
-          </div>
-        </div>
-      </aside>
-
-      <!-- ===== Filtros + lista ===== -->
-      <section class="coluna-direita">
-        <div class="card filtros">
-          <div class="segmentado pequeno" id="segmentadoFiltroTipo">
-            <button type="button" class="ativo" data-tipo="">Todos</button>
-            <button type="button" data-tipo="PERDIDO">Perdidos</button>
-            <button type="button" data-tipo="ENCONTRADO">Encontrados</button>
-          </div>
-          <select id="filtroCategoria">
-            <option value="">Todas as categorias</option>
-          </select>
-          <input type="text" id="filtroLocalizacao" placeholder="Filtrar por localização...">
-        </div>
-
-        <p id="mensagemLista" class="vazio" hidden></p>
-
-        <div id="listaItens" class="lista-itens"></div>
-      </section>
-    </main>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Achados e Devolvidos</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
