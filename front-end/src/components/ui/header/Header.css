@@ -1,0 +1,59 @@
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cabecalho_content{
+    max-width: 1700px;
+    margin: 0 auto;
+    padding: 1.6rem;
+}
+
+/* img */
+
+.cabecalho__logo{
+    width: auto ;
+    height: 4rem;
+}
+
+/* nav links */
+
+ul {
+    display: flex;
+    gap: 2.5rem;
+}
+
+li{ list-style: none }
+
+.nav__link{
+    text-decoration: none;
+    color: var(--secondary-color-gray);
+    font-size: 1.65rem; 
+    font-weight: 600;
+    transition: 0.25s; 
+}
+
+.nav__link::after{ /* after: algum conteudo que vem depois do "objeto" (nesse caso, o texto/link) */ 
+    content: " ";
+    display: block;
+    border-bottom: solid 0.2rem;
+    color: var(--primary-color-blue);
+    transform: scaleX(0);
+    transition: 0.6s;
+    transform-origin: 0%; /* origem do transform (aonde ele inicia), se fosse 100% iniciaria na direita e 50% no meio*/
+}
+
+.nav__link:hover::after{
+    transform: scaleX(1); 
+}
+
+.nav__link:hover{
+    color: var(--primary-color-blue);
+}
+
+
+/* buttons */
+
+
+

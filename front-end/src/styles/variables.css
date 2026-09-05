@@ -1,0 +1,33 @@
+:root{
+    --primary-color-blue: #0048E8;
+    --primary-color-green: #09ACA9;
+
+    --secondary-color-gray: #7B8794;
+    --secondary-color-black: #000000; /* cor que não muda ao trocar tema*/
+    --secondary-color-white: #FFFFFF;
+
+    --border-color: #D9DFE6; 
+    --background-color: #F5F7FA; 
+    --card-color: #F8FAFC;
+
+    --primary-color-text: #000000; /* cor que muda ao trocar tema*/
+
+    --success-text-color: #099733;
+    --analysis-text-color: #C55F04;
+    --error-text-color: #FF0000; 
+
+    --success-tag-color: #A8FFA3;
+    --analysis-tag-color: #FFC39D; 
+    --error-tag-color: #FEA3A3;   
+
+    --font-principal: 'Poppins', sans-serif;
+
+}
+
+[data-theme='dark']{
+    --primary-color-text: #FFFFFF; 
+
+    --background-color: #08080A; 
+    --card-color: #191818;
+    
+}
