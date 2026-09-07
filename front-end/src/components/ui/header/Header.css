@@ -17,6 +17,16 @@
     height: 4rem;
 }
 
+.cabecalho__icon{
+    width: auto;
+    height: 1.65rem;
+}
+
+.tema{
+    width: auto;
+    height: 2.3rem;
+}
+
 /* nav links */
 
 ul {
@@ -41,7 +51,7 @@ li{ list-style: none }
     color: var(--primary-color-blue);
     transform: scaleX(0);
     transition: 0.6s;
-    transform-origin: 0%; /* origem do transform (aonde ele inicia), se fosse 100% iniciaria na direita e 50% no meio*/
+    transform-origin: 50%;  /* origem do transform (aonde ele inicia), se fosse 100% iniciaria na direita e 0% na esquerda*/
 }
 
 .nav__link:hover::after{
@@ -55,5 +65,47 @@ li{ list-style: none }
 
 /* buttons */
 
+.button{
+    display: flex;
+    align-items: center;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+    font-size: 1.5rem; 
+    font-weight: 600;
+    border-color: var(--secondary-color-gray); 
+}
+
+.button:hover{
+    cursor: pointer;
+}
+
+.cabecalho__buttons{
+    display: flex;
+    gap: 2rem;
+}
+
+.button__cadastrar{
+    background: var(--primary-color-blue);  
+    border-color: var(--primary-color-blue); 
+}
+
+.button__tema{
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.entrar{
+    color: var(--primary-color-text); 
+}
+
+.cadastrar{
+    color: var(--secondary-color-white); 
+}
+
+.link{
+    padding: 0.8rem 2rem;
+}
+
+/* Responsividade */
 
 
