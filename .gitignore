@@ -5,6 +5,11 @@
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
+# Todo o diretório de projeto do IDE e módulos gerados automaticamente —
+# cada dev tem o seu, não deve ser compartilhado no repo.
+.idea/
+*.iml
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
@@ -113,6 +118,9 @@ fabric.properties
 # Azure Toolkit for IntelliJ plugin
 # https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
 .idea/**/azureSettings.xml
+
+### Maven ###
+target/
 
 ### Java ###
 # Compiled class file
