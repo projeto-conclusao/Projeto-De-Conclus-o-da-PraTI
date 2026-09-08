@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import './Header.css';
 
-import logo from '../../../assets/logo_completa.png';
-import iconCadastrarObjeto from '../../../assets/icons/header/cabecalho_cadastrar_objeto.svg';
-import temaDark from '../../../assets/icons/header/cabecalho_tema_dark.svg';
-import temaLight from '../../../assets/icons/header/cabecalho_tema_light.svg';
-import burguerWhite from '../../../assets/icons/header/cabecalho_burguer_white.svg';
-import burguerDark from '../../../assets/icons/header/cabecalho_burguer_black.svg';
-import closeWhite from '../../../assets/icons/header/cabecalho_close_white.svg';
-import closeBlack from '../../../assets/icons/header/cabecalho_close_black.svg';
-import personWhite from '../../../assets/icons/header/cabecalho_person_white.png';
-import personDark from '../../../assets/icons/header/cabecalho_person_dark.png';
+import logo from '../../assets/logo_completa.png';
+import iconCadastrarObjeto from '../../assets/icons/header/cabecalho_cadastrar_objeto.svg';
+import temaDark from '../../assets/icons/header/cabecalho_tema_dark.svg';
+import temaLight from '../../assets/icons/header/cabecalho_tema_light.svg';
+import burguerWhite from '../../assets/icons/header/cabecalho_burguer_white.svg';
+import burguerDark from '../../assets/icons/header/cabecalho_burguer_black.svg';
+import closeWhite from '../../assets/icons/header/cabecalho_close_white.svg';
+import closeBlack from '../../assets/icons/header/cabecalho_close_black.svg';
+import personWhite from '../../assets/icons/header/cabecalho_person_white.png';
+import personDark from '../../assets/icons/header/cabecalho_person_dark.png';
 
 function Header({ tema, aoAlternarTema }) {
 
