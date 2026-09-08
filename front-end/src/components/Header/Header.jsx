@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import './Header.css';
 
+import { NavLink } from 'react-router'; 
+
 import logo from '../../assets/logo_completa.png';
 import iconCadastrarObjeto from '../../assets/icons/header/cabecalho_cadastrar_objeto.svg';
 import temaDark from '../../assets/icons/header/cabecalho_tema_dark.svg';
@@ -30,12 +32,12 @@ function Header({ tema, aoAlternarTema }) {
                 {tema === 'light' ? <img className='burguer close__menu' onClick={toogleMenu} src={closeWhite} alt="Fechar menu" /> : <img className='burguer close__menu' onClick={toogleMenu} src={closeBlack} alt="Fechar menu" />}
                 <nav>
                     <ul>
-                        <li><a className='nav__link' href="#">início</a></li>
-                        <li><a className='nav__link' href="#">Buscar objetos</a></li>
-                        <li className='link__cadastrar'> <a className='nav__link' href="#">Cadastrar objeto</a> </li>
-                        <li><a className='nav__link' href="#">Como funciona</a></li>
-                        <li><a className='nav__link' href="#">Achados</a></li>
-                        <li><a className='nav__link' href="#">Perdidos</a></li>
+                        <NavLink to='/' end> <li><a className='nav__link'>início</a></li> </NavLink>
+                        <NavLink to='/buscar-objetos' end> <li><a className='nav__link'>Buscar objetos</a></li> </NavLink>
+                        <NavLink to='/' end className='link__cadastrar'> <li> <a className='nav__link'>Cadastrar objeto</a> </li> </NavLink>
+                        <NavLink to='/' end> <li><a className='nav__link'>Como funciona</a></li> </NavLink>
+                        <NavLink to='/' end> <li><a className='nav__link'>Achados</a></li> </NavLink>
+                        <NavLink to='/' end> <li><a className='nav__link'>Perdidos</a></li> </NavLink>
 
                     </ul>
                 </nav>
