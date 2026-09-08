@@ -11,6 +11,7 @@
     --card-color: #F8FAFC;
 
     --primary-color-text: #000000; /* cor que muda ao trocar tema*/
+    --secondary-color-text: #FFFFFF; /* cor que muda ao trocar tema*/
 
     --success-text-color: #099733;
     --analysis-text-color: #C55F04;
@@ -26,6 +27,7 @@
 
 [data-theme='dark']{
     --primary-color-text: #FFFFFF; 
+    --secondary-color-text: #000000;
 
     --background-color: #08080A; 
     --card-color: #191818;
