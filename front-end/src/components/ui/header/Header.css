@@ -1,0 +1,177 @@
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cabecalho_content{
+    max-width: 1700px;
+    margin: 0 auto;
+    padding: 1.6rem;
+}
+
+/* img */
+
+.cabecalho__logo{
+    width: auto ;
+    height: clamp(2.5rem, 5vw, 4rem);
+}
+
+.cabecalho__icon{
+    width: auto;
+    height: clamp(1rem, 3vw, 1.65rem);
+}
+
+.tema{
+    width: auto;
+    height: clamp(2rem, 3vw, 2.3rem);
+}
+
+.burguer, .person{
+    width: auto;
+    height: 2.3rem;
+    align-items: center;
+}
+
+/* nav links */
+
+ul {
+    display: flex;
+    gap: clamp(1rem, 2vw, 2.5rem);
+}
+
+li{ list-style: none }
+
+.nav__link{
+    text-decoration: none;
+    color: var(--secondary-color-gray);
+    font-size: clamp(1.4rem, 2vw, 1.65rem); 
+    font-weight: 600;
+    transition: 0.25s; 
+}
+
+.nav__link::after{ /* after: algum conteudo que vem depois do "objeto" (nesse caso, o texto/link) */ 
+    content: " ";
+    display: block;
+    border-bottom: solid 0.2rem;
+    color: var(--primary-color-blue);
+    transform: scaleX(0);
+    transition: 0.6s;
+    transform-origin: 50%;  /* origem do transform (aonde ele inicia), se fosse 100% iniciaria na direita e 0% na esquerda*/
+}
+
+.nav__link:hover::after{
+    transform: scaleX(1); 
+}
+
+.nav__link:hover{
+    color: var(--primary-color-blue);
+}
+
+/* buttons */
+
+.button{
+    display: flex;
+    align-items: center;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-color: var(--secondary-color-gray); 
+    transition: 0.4s ease;
+}
+
+.button:hover{
+    cursor: pointer;
+    box-shadow: 0 0 0.2rem var(--primary-color-text)
+}
+
+.cabecalho__buttons{
+    display: flex;
+    gap: 2rem;
+}
+
+.button__cadastrar{
+    background: var(--primary-color-blue);  
+    border-color: var(--primary-color-blue); 
+}
+
+.button__tema{
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.link{
+    padding: 0.8rem 2rem;
+}
+
+.entrar{
+    color: var(--primary-color-text); 
+}
+
+.cadastrar{
+    color: var(--secondary-color-white); 
+}
+
+/* displays none */
+
+.link__cadastrar, .button__person, .burguer__menu, .close__menu{
+    display: none;
+}
+
+/* Responsividade */
+
+@media ( max-width: 1300px ){
+
+    /* displays */
+
+    .button__cadastrar, .button__entrar { display: none }
+
+    .person, .button__person, .burguer__menu { display: flex }
+
+    .link__cadastrar { display: block }
+    
+    /* nav links */
+    
+    ul {
+        flex-direction: column;
+        align-items: end;
+    }
+    
+    .nav__link { color: var(--secondary-color-text) } 
+
+    .nav__link:hover { color: var(--primary-color-text) }
+
+    .nav__link::after { color: var(--primary-color-text) }
+
+    /* buttons */
+
+    .button__tema {
+        border: rgba(0, 0, 0, 0);
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* burguer menu */
+
+    .close__menu{
+        display: flex;
+        margin-bottom: 2rem;
+    }
+
+    .menu__desativo, .menu__ativo{
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        right: 0; 
+        background-color: var(--primary-color-blue);
+        padding: 1.5rem;
+        border-radius: 15px 0 0 15px;
+        transition: 0.6s ease;
+    }
+
+    .menu__desativo{
+        transform: translateX(100%); 
+    }
+}
