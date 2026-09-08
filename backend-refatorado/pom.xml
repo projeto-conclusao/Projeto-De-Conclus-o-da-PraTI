@@ -19,6 +19,20 @@
 
     <properties>
         <java.version>21</java.version>
+        <!--
+          Permite ao CI rodar só os testes de integração (Failsafe) sem repetir os
+          unitários (Surefire) na mesma invocação do Maven — ver .github/workflows.
+          Ex.: mvn verify -Dskip.unit.tests=true
+        -->
+        <skip.unit.tests>false</skip.unit.tests>
+        <!--
+          O spring-boot-starter-parent 3.3.4 gerencia Testcontainers 1.19.8 (meados
+          de 2024), velho demais para falar com engines Docker mais recentes (visto
+          na prática: Docker Desktop 29.x responde 400 ao cliente Docker embutido
+          nessa versão). "testcontainers.version" é o property de override oficial
+          exposto pelo BOM do Spring Boot para essa dependência.
+        -->
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -111,6 +125,56 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!--
+          Testcontainers: os testes de integração (sufixo *IT) sobem um Postgres
+          real em container Docker — nada de H2/banco em memória, para exercitar
+          exatamente o mesmo driver/dialeto e as migrations Flyway reais de
+          produção. Versões gerenciadas pelo spring-boot-dependencies (BOM),
+          herdado via spring-boot-starter-parent — não precisa fixar <version>.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Espera assíncrona (ex.: aguardar o listener @Async criar um Match) sem sleep fixo. -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          WireMock: o login via Google (OAuth2) faz chamadas HTTP reais ao token-uri
+          e ao user-info-uri do provedor durante o callback. Nos testes, apontamos
+          essas URLs (via @DynamicPropertySource) para um WireMock local, simulando
+          as respostas do Google sem depender de credenciais/rede externa reais.
+          Usamos o artefato "-standalone" (traz Jetty e todas as deps já shaded):
+          o artefato "wiremock" puro não embute mais um servidor HTTP por padrão a
+          partir da 3.x, e evita conflito de versão do Apache HttpClient5/HttpCore5
+          com o que o BOM do Spring Boot já gerencia para outras libs.
+          Versão fixada manualmente: não é gerenciada pelo BOM do Spring Boot.
+          Confirmada como o último release estável em repo1.maven.org/maven2/org/wiremock/wiremock/
+          (a versão "LATEST"/"RELEASE" do Maven aponta hoje para um pré-lançamento 4.0.0-beta).
+        -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.13.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -126,6 +190,37 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+
+            <!--
+              Testes unitários (**/*Test.java): rodam na fase "test" (mvn test),
+              rápidos, sem Docker/Testcontainers.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skip.unit.tests}</skipTests>
+                </configuration>
+            </plugin>
+
+            <!--
+              Testes de integração (**/*IT.java): só rodam nas fases
+              integration-test/verify (mvn verify), e não em "mvn test" — o
+              Failsafe não segue o include pattern do Surefire, então os dois
+              nunca se sobrepõem por causa da convenção de nome de classe.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

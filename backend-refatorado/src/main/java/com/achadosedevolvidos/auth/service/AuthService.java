@@ -7,6 +7,7 @@ import com.achadosedevolvidos.auth.dto.RegisterRequest;
 import com.achadosedevolvidos.shared.exception.AppException;
 import com.achadosedevolvidos.user.model.User;
 import com.achadosedevolvidos.user.repository.UserRepository;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -75,7 +76,14 @@ public class AuthService {
     }
 
     public AuthResponse refreshToken(RefreshRequest request) {
-        String email = jwtService.extractUsername(request.refreshToken());
+        String email;
+        try {
+            email = jwtService.extractUsername(request.refreshToken());
+        } catch (JwtException | IllegalArgumentException e) {
+            // Token malformado ou assinado com outra chave: mesmo tratamento de
+            // "inválido" dado abaixo a um token bem-formado porém expirado.
+            throw new AppException("Refresh token inválido ou expirado", HttpStatus.UNAUTHORIZED);
+        }
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException("Usuário não encontrado", HttpStatus.UNAUTHORIZED));

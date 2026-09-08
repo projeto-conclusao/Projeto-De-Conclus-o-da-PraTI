@@ -54,6 +54,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MatchResponse> findMatchesForItem(UUID itemId) {
         return matchRepository.findByLostItemIdOrFoundItemId(itemId, itemId)
                 .stream()

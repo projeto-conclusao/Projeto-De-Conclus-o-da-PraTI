@@ -72,6 +72,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemResponse> search(ItemSearchFilter filter) {
         return itemRepository.findAll(ItemSpecifications.withFilters(filter))
                 .stream()
@@ -80,6 +81,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemResponse findById(UUID id) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new AppException("Item não encontrado", HttpStatus.NOT_FOUND));

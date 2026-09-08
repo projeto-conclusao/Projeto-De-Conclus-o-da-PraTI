@@ -119,10 +119,33 @@ preenchido sozinho via `@PrePersist` — nenhum Service precisa mais lembrar de
 chamar `.createdAt(LocalDateTime.now())` na mão (o `AuthService` e o
 `CustomOAuth2UserService`, por exemplo, não fazem mais isso).
 
-## 8. O que ainda fica para depois (fora do escopo deste refactor)
+## 8. `open-in-view: false` exige `@Transactional` explícito em toda leitura com relação lazy
+
+`spring.jpa.open-in-view` está desligado de propósito (ver seção 2) — a sessão
+do Hibernate não fica aberta pela duração inteira da requisição HTTP por
+padrão. Isso só é seguro se **todo** método de Service que navega uma relação
+`@ManyToOne`/`@OneToMany` preguiçosa estiver dentro de uma transação — inclusive
+métodos de leitura, não só os de escrita. Faltou isso em quatro lugares
+(`ItemServiceImpl.findById`/`search`, `MatchServiceImpl.findMatchesForItem`,
+`ChatServiceImpl.history`), descoberto só ao escrever os testes de integração
+com Postgres real (`mvn verify` — ver `README.md`, seção 2.4): com mocks, o
+`Item`/`Match` "lazy" retornado nunca é um proxy de verdade, então o teste
+unitário não pega esse tipo de erro. Os quatro agora têm
+`@Transactional(readOnly = true)`.
+
+## 9. Testes automatizados
+
+Cobertura completa (unitária + integração) descrita em `README.md`, seção 2.4.
+Resumo: testes unitários (Mockito, sem Spring/banco) para os Services com
+lógica de negócio; testes de integração (`@SpringBootTest` + Postgres real via
+Testcontainers) cobrindo os endpoints REST, o fluxo assíncrono
+item→evento→match, a conexão WebSocket/STOMP autenticada, e o callback do
+login Google simulado via WireMock. Pipeline de CI em
+`.github/workflows/backend-ci.yml`.
+
+## 10. O que ainda fica para depois (fora do escopo deste refactor)
 
 - Rate limiting no `/api/v1/auth/login`.
 - Busca geográfica por raio (PostGIS).
 - Paginação em `/api/v1/items/search` (hoje retorna a lista inteira).
-- Testes de integração com Testcontainers cobrindo o fluxo completo
-  item → evento → match → chat.
+- Publicação do app OAuth2 no Google Cloud Console (hoje em modo "Testing").

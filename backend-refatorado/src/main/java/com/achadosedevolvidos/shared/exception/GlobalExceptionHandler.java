@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -31,6 +32,18 @@ public class GlobalExceptionHandler {
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return ResponseEntity.badRequest().body(new ApiError(HttpStatus.BAD_REQUEST.value(), message));
+    }
+
+    /**
+     * Sem isso, uma requisição para uma rota inexistente (nenhum @Controller nem
+     * recurso estático correspondente) cai no handler genérico de Exception logo
+     * abaixo e vira 500 — quando o correto é 404, exatamente o status que o Spring
+     * já sinaliza ao lançar este tipo específico de exceção.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiError(HttpStatus.NOT_FOUND.value(), "Recurso não encontrado"));
     }
 
     /**

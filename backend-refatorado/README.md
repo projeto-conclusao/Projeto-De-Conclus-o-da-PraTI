@@ -187,13 +187,34 @@ mvn compile
 
 ### 2.4. Rodando os testes
 
+Há duas suítes, separadas por convenção de nome e por plugin Maven — rodar uma
+não repete a outra:
+
 ```bash
+# Unitários (classes *Test.java, via Surefire) — rápidos, sem Docker.
 mvn test
+
+# Integração (classes *IT.java, via Failsafe) — sobem um Postgres real via
+# Testcontainers e simulam o Google via WireMock. Precisa do Docker rodando
+# (seção 1.3). "mvn verify" roda os unitários e os de integração juntos; para
+# rodar só os de integração:
+mvn verify -Dskip.unit.tests=true
 ```
 
-Cobre `JwtService` (geração, validação, expiração, subject do token) e
-`MatchEngineService` (motor de pontuação de matches) — ambos rodam sem
-precisar de banco de dados nem de contexto Spring.
+**Unitários** (Mockito, sem Spring, sem banco): `JwtService`, `AuthService`,
+`ItemServiceImpl`, `ChatServiceImpl` e `MatchEngineService` — cobrindo o
+caminho feliz e os principais erros de cada um (e-mail duplicado, credenciais
+inválidas, usuário/categoria/match inexistente, remetente que não participa da
+conversa, etc.).
+
+**Integração** (`@SpringBootTest` + Postgres real via Testcontainers):
+endpoints REST de auth/itens/categorias/chat, o fluxo assíncrono completo
+`item criado → evento → motor de match → match persistido`
+(`MatchFlowIT`), a conexão WebSocket/STOMP autenticada do chat
+(`ChatWebSocketIT`), e o callback do login Google com o provedor simulado via
+WireMock (`GoogleOAuth2LoginIT`) — cobrindo tanto o cadastro de usuário novo
+quanto a vinculação de uma conta local já existente, e as falhas do provedor
+(sem e-mail no retorno, `code` recusado).
 
 ### 2.5. Rodando a aplicação
 
@@ -211,6 +232,25 @@ O schema é criado/atualizado automaticamente pelo Flyway na subida (ver
 `ARQUITETURA.md`, seção 2). Se tudo estiver certo, o log termina com
 `Started AchadosEDevolvidosApplication` e a API responde em
 `http://localhost:8080`.
+
+---
+
+## 3. Integração Contínua (GitHub Actions)
+
+Pipeline em `.github/workflows/backend-ci.yml`, disparada em push/PR para
+`main`/`backend-develop` (só quando algo em `backend-refatorado/` muda), com
+runner `ubuntu-latest`:
+
+| Job | O que faz |
+|---|---|
+| `build` | `mvn compile` — falha rápido se não compilar, antes de gastar tempo com testes. |
+| `unit-tests` | `mvn test` (Surefire). Publica os resultados como Check Run e como artefato (`surefire-reports`). |
+| `integration-tests` | `mvn verify -Dskip.unit.tests=true` (Failsafe). O runner Ubuntu já tem Docker nativamente — Testcontainers e WireMock sobem sem nenhum setup extra. Publica os resultados (`failsafe-reports`). |
+| `ci-status` | Gate único que só passa se os dois jobs de teste passarem — configure só ele como *required check* na proteção da branch, em vez de dois. |
+
+`unit-tests` e `integration-tests` rodam em paralelo (ambos dependem só de
+`build`), não um depois do outro — o tempo total do pipeline é
+aproximadamente o do mais lento dos dois, não a soma.
 
 ---
 
@@ -265,14 +305,36 @@ Resumo funcional — a justificativa técnica de cada item está em
 - **Ambiente de desenvolvimento reprodutível**: `docker-compose.yml` (Postgres
   com volume nomeado, dados persistentes) + `.env.example` como template —
   ver seção 2 acima.
+- **Suíte de testes unitários e de integração** (ver seção 2.4) — os de
+  integração usam Postgres real via Testcontainers e simulam o Google via
+  WireMock, cobrindo autenticação (JWT e OAuth2/Google), itens, categorias,
+  chat e o fluxo assíncrono completo de match.
+- **Pipeline de CI no GitHub Actions** (ver seção 3) — compila e roda as duas
+  suítes de teste a cada push/PR.
+- **3 bugs de correção encontrados e corrigidos ao escrever os testes de
+  integração** (nenhum coberto antes, porque testes com mocks não exercitam
+  proxies do Hibernate nem o ciclo de vida real de uma transação):
+  - `AuthService.refreshToken`: um refresh token malformado ou expirado
+    escapava como `500` em vez do `401` pretendido pelo código (a exceção do
+    JJWT não era capturada antes de chegar no handler genérico de erro).
+  - `GlobalExceptionHandler`: qualquer rota inexistente (nenhum
+    `@Controller` nem recurso estático correspondente) também virava `500`
+    em vez de `404`, pelo mesmo motivo — o handler genérico de `Exception`
+    interceptava a `NoResourceFoundException` do Spring antes dela virar o
+    404 que já carregava por padrão.
+  - `ItemServiceImpl.findById/search`, `MatchServiceImpl.findMatchesForItem`
+    e `ChatServiceImpl.history`: como `spring.jpa.open-in-view` está
+    desligado (decisão deliberada do projeto), esses quatro métodos de
+    leitura lançavam `LazyInitializationException` (→ 500) ao tentar
+    acessar relações `@ManyToOne` preguiçosas (`item.getUser()`,
+    `match.getLostItem()`, etc.) fora de uma transação. Faltava
+    `@Transactional(readOnly = true)` nos quatro.
 
 ### Fora do escopo desta refatoração (próximos passos conhecidos)
 
 - Rate limiting no `/api/v1/auth/login`.
 - Busca geográfica por raio (PostGIS ou Haversine em SQL nativo).
 - Paginação em `/api/v1/items/search`.
-- Testes de integração com Testcontainers cobrindo o fluxo completo
-  item → evento → match → chat.
 - Publicação do app OAuth2 no Google (hoje em modo "Testing", só e-mails
   cadastrados como test user conseguem logar via Google).
 

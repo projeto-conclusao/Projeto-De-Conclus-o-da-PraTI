@@ -54,6 +54,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChatMessageResponse> history(UUID matchId, UUID requesterId) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new AppException("Match não encontrado", HttpStatus.NOT_FOUND));
