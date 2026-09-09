@@ -1,0 +1,179 @@
+name: Backend CI
+
+# Só dispara quando algo relevante ao backend muda — evita rodar em todo push
+# que só toca o front-end, por exemplo.
+on:
+  push:
+    branches: [main, backend-develop]
+    paths:
+      - "backend-refatorado/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: [main, backend-develop]
+    paths:
+      - "backend-refatorado/**"
+      - ".github/workflows/backend-ci.yml"
+  workflow_dispatch: {}
+
+# Cancela execuções antigas da mesma branch/PR quando um novo push chega,
+# em vez de gastar minutos de CI rodando uma versão já obsoleta.
+concurrency:
+  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# "checks: write" é necessário para o dorny/test-reporter publicar o resumo
+# dos testes como Check Run (o GITHUB_TOKEN é read-only por padrão em repos
+# mais novos). O passo em si tem continue-on-error: true — quem decide
+# sucesso/falha do pipeline é o "mvn test"/"mvn verify", nunca o relatório.
+permissions:
+  contents: read
+  checks: write
+
+env:
+  JAVA_VERSION: "21"
+  # Amazon Corretto é a distribuição usada pelo time em desenvolvimento local
+  # (ver README.md) — mantém o mesmo JDK em dev e CI.
+  JAVA_DISTRIBUTION: "corretto"
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Job 1: valida que o código compila antes de gastar tempo com testes.
+  # ---------------------------------------------------------------------
+  build:
+    name: Compilar
+    runs-on: ubuntu-latest
+    # O pom.xml do backend não está na raiz do repositório — todo "run:" deste
+    # job parte daqui.
+    defaults:
+      run:
+        working-directory: backend-refatorado
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v7
+
+      - name: Configurar JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DISTRIBUTION }})
+        uses: actions/setup-java@v6
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+          cache-dependency-path: backend-refatorado/pom.xml
+
+      - name: Compilar (mvn compile)
+        run: mvn --batch-mode --no-transfer-progress compile
+
+  # ---------------------------------------------------------------------
+  # Job 2: testes unitários (Surefire, **/*Test.java) — rápidos, sem Docker.
+  # ---------------------------------------------------------------------
+  unit-tests:
+    name: Testes unitários
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-refatorado
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v7
+
+      - name: Configurar JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DISTRIBUTION }})
+        uses: actions/setup-java@v6
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+          cache-dependency-path: backend-refatorado/pom.xml
+
+      - name: Rodar testes unitários (mvn test)
+        run: mvn --batch-mode --no-transfer-progress test
+
+      - name: Publicar resumo dos testes unitários
+        uses: dorny/test-reporter@v3
+        if: always()
+        continue-on-error: true
+        with:
+          name: Resultado — Testes unitários
+          # Só os relatórios por classe (TEST-*.xml) — "*.xml" também pegaria
+          # arquivos de sumário que não são o mesmo formato JUnit.
+          path: "backend-refatorado/target/surefire-reports/TEST-*.xml"
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: Upload dos relatórios do Surefire (mesmo se falhar)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: backend-refatorado/target/surefire-reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------
+  # Job 3: testes de integração (Failsafe, **/*IT.java) — sobem Postgres via
+  # Testcontainers e simulam o Google OAuth2 via WireMock. O runner Ubuntu do
+  # GitHub Actions já tem Docker disponível nativamente, sem setup extra.
+  # ---------------------------------------------------------------------
+  integration-tests:
+    name: Testes de integração
+    needs: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-refatorado
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v7
+
+      - name: Configurar JDK ${{ env.JAVA_VERSION }} (${{ env.JAVA_DISTRIBUTION }})
+        uses: actions/setup-java@v6
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+          cache-dependency-path: backend-refatorado/pom.xml
+
+      - name: Confirmar que o Docker está disponível (Testcontainers precisa dele)
+        run: docker version
+
+      - name: Rodar testes de integração (mvn verify, sem repetir os unitários)
+        run: mvn --batch-mode --no-transfer-progress verify -Dskip.unit.tests=true
+
+      - name: Publicar resumo dos testes de integração
+        uses: dorny/test-reporter@v3
+        if: always()
+        continue-on-error: true
+        with:
+          name: Resultado — Testes de integração
+          # failsafe-reports/ também tem um failsafe-summary.xml (não é JUnit
+          # XML) — "TEST-*.xml" pega só os relatórios de verdade, por classe.
+          path: "backend-refatorado/target/failsafe-reports/TEST-*.xml"
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: Upload dos relatórios do Failsafe (mesmo se falhar)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: failsafe-reports
+          path: backend-refatorado/target/failsafe-reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------
+  # Job 4: gate único para branch protection — só fica verde se os dois
+  # jobs de teste passarem. Evita ter que marcar 2+ checks como obrigatórios
+  # manualmente nas configurações do repositório.
+  # ---------------------------------------------------------------------
+  ci-status:
+    name: CI (status final)
+    needs: [unit-tests, integration-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Verificar se todos os jobs anteriores passaram
+        run: |
+          if [ "${{ needs.unit-tests.result }}" != "success" ] || [ "${{ needs.integration-tests.result }}" != "success" ]; then
+            echo "Um ou mais jobs de teste falharam."
+            exit 1
+          fi
+          echo "Todos os testes passaram."

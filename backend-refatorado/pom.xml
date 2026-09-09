@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.achadosedevolvidos</groupId>
+    <artifactId>api</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>achados-e-devolvidos-api</name>
+    <description>API do sistema Achados e Devolvidos (PraTI)</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!--
+          Permite ao CI rodar só os testes de integração (Failsafe) sem repetir os
+          unitários (Surefire) na mesma invocação do Maven — ver .github/workflows.
+          Ex.: mvn verify -Dskip.unit.tests=true
+        -->
+        <skip.unit.tests>false</skip.unit.tests>
+        <!--
+          O spring-boot-starter-parent 3.3.4 gerencia Testcontainers 1.19.8 (meados
+          de 2024), velho demais para falar com engines Docker mais recentes (visto
+          na prática: Docker Desktop 29.x responde 400 ao cliente Docker embutido
+          nessa versão). "testcontainers.version" é o property de override oficial
+          exposto pelo BOM do Spring Boot para essa dependência.
+        -->
+        <testcontainers.version>1.21.4</testcontainers.version>
+    </properties>
+
+    <dependencies>
+        <!-- Web / REST -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Necessário para o ChatController (WebSocket) já existente no projeto -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- Persistência -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+          Flyway: quem cria/versiona o schema é ele, não o Hibernate.
+          spring.jpa.hibernate.ddl-auto fica em "validate" (só confere se as
+          entidades batem com o schema já migrado — nunca cria/altera tabelas).
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Validação de DTOs -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Segurança: Bearer JWT (login local) + OAuth2 Login (Google) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <!-- JWT (biblioteca jjwt 0.12.x) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Testes -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          Testcontainers: os testes de integração (sufixo *IT) sobem um Postgres
+          real em container Docker — nada de H2/banco em memória, para exercitar
+          exatamente o mesmo driver/dialeto e as migrations Flyway reais de
+          produção. Versões gerenciadas pelo spring-boot-dependencies (BOM),
+          herdado via spring-boot-starter-parent — não precisa fixar <version>.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Espera assíncrona (ex.: aguardar o listener @Async criar um Match) sem sleep fixo. -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          WireMock: o login via Google (OAuth2) faz chamadas HTTP reais ao token-uri
+          e ao user-info-uri do provedor durante o callback. Nos testes, apontamos
+          essas URLs (via @DynamicPropertySource) para um WireMock local, simulando
+          as respostas do Google sem depender de credenciais/rede externa reais.
+          Usamos o artefato "-standalone" (traz Jetty e todas as deps já shaded):
+          o artefato "wiremock" puro não embute mais um servidor HTTP por padrão a
+          partir da 3.x, e evita conflito de versão do Apache HttpClient5/HttpCore5
+          com o que o BOM do Spring Boot já gerencia para outras libs.
+          Versão fixada manualmente: não é gerenciada pelo BOM do Spring Boot.
+          Confirmada como o último release estável em repo1.maven.org/maven2/org/wiremock/wiremock/
+          (a versão "LATEST"/"RELEASE" do Maven aponta hoje para um pré-lançamento 4.0.0-beta).
+        -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!--
+              Testes unitários (**/*Test.java): rodam na fase "test" (mvn test),
+              rápidos, sem Docker/Testcontainers.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skip.unit.tests}</skipTests>
+                </configuration>
+            </plugin>
+
+            <!--
+              Testes de integração (**/*IT.java): só rodam nas fases
+              integration-test/verify (mvn verify), e não em "mvn test" — o
+              Failsafe não segue o include pattern do Surefire, então os dois
+              nunca se sobrepõem por causa da convenção de nome de classe.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
