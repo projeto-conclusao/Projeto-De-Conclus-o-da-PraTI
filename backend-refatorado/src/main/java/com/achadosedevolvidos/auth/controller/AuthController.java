@@ -1,9 +1,13 @@
 package com.achadosedevolvidos.auth.controller;
 
 import com.achadosedevolvidos.auth.dto.AuthResponse;
+import com.achadosedevolvidos.auth.dto.ForgotPasswordRequest;
 import com.achadosedevolvidos.auth.dto.LoginRequest;
+import com.achadosedevolvidos.auth.dto.LogoutRequest;
+import com.achadosedevolvidos.auth.dto.MessageResponse;
 import com.achadosedevolvidos.auth.dto.RefreshRequest;
 import com.achadosedevolvidos.auth.dto.RegisterRequest;
+import com.achadosedevolvidos.auth.dto.ResetPasswordRequest;
 import com.achadosedevolvidos.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +42,20 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         return ResponseEntity.ok(authService.refreshToken(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(@Valid @RequestBody LogoutRequest request) {
+        return ResponseEntity.ok(authService.logout(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity.ok(authService.resetPassword(request));
     }
 }

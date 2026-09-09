@@ -1,9 +1,12 @@
 package com.achadosedevolvidos.auth.controller;
 
 import com.achadosedevolvidos.auth.dto.AuthResponse;
+import com.achadosedevolvidos.auth.dto.ForgotPasswordRequest;
 import com.achadosedevolvidos.auth.dto.LoginRequest;
+import com.achadosedevolvidos.auth.dto.LogoutRequest;
 import com.achadosedevolvidos.auth.dto.RefreshRequest;
 import com.achadosedevolvidos.auth.dto.RegisterRequest;
+import com.achadosedevolvidos.auth.dto.ResetPasswordRequest;
 import com.achadosedevolvidos.support.IntegrationTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -130,5 +133,135 @@ class AuthControllerIT extends IntegrationTestSupport {
         assertThat(result.getResponse().getContentAsString())
                 .doesNotContain("Exception")
                 .doesNotContain("com.achadosedevolvidos");
+    }
+
+    // ---------- logout ----------
+
+    @Test
+    void sunnyDay_deveFazerLogoutERecusarRefreshSubsequente() throws Exception {
+        String email = "logout-" + UUID.randomUUID() + "@teste.com";
+        RegisterRequest registerRequest = new RegisterRequest("Ana Silva", email, "senha12345");
+
+        MvcResult registerResult = mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        AuthResponse registerResponse = objectMapper.readValue(
+                registerResult.getResponse().getContentAsString(), AuthResponse.class
+        );
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LogoutRequest(registerResponse.refreshToken()))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RefreshRequest(registerResponse.refreshToken()))))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void sunnyDay_logoutComTokenInexistenteAindaRetorna200() throws Exception {
+        String tokenNuncaEmitido = "isto-nao-eh-um-refresh-token-emitido-por-este-servidor";
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LogoutRequest(tokenNuncaEmitido))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    // ---------- forgot-password ----------
+
+    @Test
+    void rainyDay_forgotPasswordNuncaRevelaSeEmailExiste() throws Exception {
+        String emailCadastrado = "esqueci-senha-" + UUID.randomUUID() + "@teste.com";
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new RegisterRequest("Ana Silva", emailCadastrado, "senha12345"))))
+                .andExpect(status().isCreated());
+
+        MvcResult respostaEmailCadastrado = mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ForgotPasswordRequest(emailCadastrado))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String emailNaoCadastrado = "nao-existe-" + UUID.randomUUID() + "@teste.com";
+        MvcResult respostaEmailNaoCadastrado = mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ForgotPasswordRequest(emailNaoCadastrado))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(respostaEmailCadastrado.getResponse().getContentAsString())
+                .isEqualTo(respostaEmailNaoCadastrado.getResponse().getContentAsString());
+    }
+
+    // ---------- reset-password ----------
+
+    @Test
+    void sunnyDay_deveRedefinirSenhaComTokenValidoERevogarSessoes() throws Exception {
+        String email = "reset-senha-" + UUID.randomUUID() + "@teste.com";
+        MvcResult registerResult = mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new RegisterRequest("Ana Silva", email, "senha-antiga123"))))
+                .andExpect(status().isCreated())
+                .andReturn();
+        AuthResponse registerResponse = objectMapper.readValue(
+                registerResult.getResponse().getContentAsString(), AuthResponse.class
+        );
+
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ForgotPasswordRequest(email))))
+                .andExpect(status().isOk());
+
+        String resetToken = waitForPasswordResetToken(email);
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ResetPasswordRequest(resetToken, "senha-nova456"))))
+                .andExpect(status().isOk());
+
+        // O refresh token emitido antes do reset não deve mais funcionar.
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new RefreshRequest(registerResponse.refreshToken()))))
+                .andExpect(status().isUnauthorized());
+
+        // Senha antiga não funciona mais, a nova sim.
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest(email, "senha-antiga123"))))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest(email, "senha-nova456"))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void rainyDay_resetPasswordDeveRecusarTokenInvalido() throws Exception {
+        ResetPasswordRequest request = new ResetPasswordRequest("token-que-nunca-existiu", "senha-nova456");
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void rainyDay_resetPasswordDeveRecusarPayloadComSenhaCurta() throws Exception {
+        ResetPasswordRequest request = new ResetPasswordRequest("qualquer-token", "123");
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
     }
 }

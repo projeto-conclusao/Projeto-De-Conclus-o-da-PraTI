@@ -48,6 +48,12 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+        <!-- Envio de e-mail (fluxo de esqueci-minha-senha) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- Persistência -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -173,6 +179,19 @@
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock-standalone</artifactId>
             <version>3.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          GreenMail: servidor SMTP fake em memória, mesmo papel que o WireMock cumpre
+          para o Google OAuth2 acima — permite que os testes de integração do fluxo
+          de esqueci-minha-senha capturem o e-mail (e o token bruto nele) de verdade,
+          sem depender de credenciais/rede externa reais do Mailtrap.
+        -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail-junit5</artifactId>
+            <version>2.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
