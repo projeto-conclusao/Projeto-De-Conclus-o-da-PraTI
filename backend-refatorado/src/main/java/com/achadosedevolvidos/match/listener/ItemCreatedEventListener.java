@@ -25,7 +25,7 @@ public class ItemCreatedEventListener {
     private final ItemRepository itemRepository;
     private final MatchService matchService;
 
-    @Async
+    @Async("taskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onItemCreated(ItemCreatedEvent event) {
         try {

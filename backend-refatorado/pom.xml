@@ -48,6 +48,12 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
+        <!-- Envio de e-mail (fluxo de esqueci-minha-senha) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- Persistência -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -77,6 +83,18 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+          Gera a spec OpenAPI (/v3/api-docs) e o Swagger UI (/swagger-ui.html) em
+          runtime, a partir dos @RestController/DTOs já existentes — nada de YAML
+          escrito à mão, então a documentação nunca fica desatualizada em relação
+          ao código. Ver README-OPENAPI.md.
+        -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
 
         <!-- Segurança: Bearer JWT (login local) + OAuth2 Login (Google) -->
@@ -173,6 +191,19 @@
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock-standalone</artifactId>
             <version>3.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+          GreenMail: servidor SMTP fake em memória, mesmo papel que o WireMock cumpre
+          para o Google OAuth2 acima — permite que os testes de integração do fluxo
+          de esqueci-minha-senha capturem o e-mail (e o token bruto nele) de verdade,
+          sem depender de credenciais/rede externa reais do Mailtrap.
+        -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail-junit5</artifactId>
+            <version>2.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

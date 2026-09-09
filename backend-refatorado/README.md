@@ -15,6 +15,8 @@ Documentação relacionada:
 - **`README-AUTH.md`** — detalhes dos dois mecanismos de autenticação
   (Bearer JWT e OAuth2/Google): endpoints, contratos, o que o front-end precisa
   enviar/receber.
+- **`README-OPENAPI.md`** — como gerar tipos TypeScript automaticamente a
+  partir da API real (Swagger UI + `openapi-typescript`/`orval`).
 
 ## Stack
 
@@ -166,6 +168,9 @@ Preencha no `.env`:
 | `JWT_ACCESS_EXPIRATION_MS` / `JWT_REFRESH_EXPIRATION_MS` | Não | Têm default (15 min / 7 dias) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Só para testar login Google | Sem essas credenciais reais, o login local (JWT) funciona normalmente; só o botão "Entrar com Google" falha. Veja `README-AUTH.md` para o passo a passo de criação no Google Cloud Console. |
 | `OAUTH2_REDIRECT_URI` / `OAUTH2_FAILURE_REDIRECT_URI` | Não | Para onde o navegador volta após o login Google (sucesso/falha) |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Só para testar "esqueci minha senha" | Credenciais SMTP (ex.: Mailtrap). Sem valor padrão — sem elas, a aplicação **não sobe**. `MAIL_HOST`/`MAIL_PORT` têm default (sandbox do Mailtrap). Veja `README-AUTH.md`. |
+| `PASSWORD_RESET_REDIRECT_URI` / `PASSWORD_RESET_EXPIRATION_MINUTES` | Não | Página do front-end para onde aponta o link de redefinição, e validade do token (têm default) |
+| `SWAGGER_USERNAME` / `SWAGGER_PASSWORD` | Sim | Credencial (Basic Auth) para abrir `/swagger-ui` e `/v3/api-docs` — combine com o time (frontend + backend), não é conta de usuário do app. Sem valor padrão — a aplicação **não sobe** sem isso. Veja `README-OPENAPI.md`. |
 | `CORS_ALLOWED_ORIGINS` | Não | Origem(ns) do front-end permitidas via CORS |
 
 ### 2.2. Subindo o banco de dados
@@ -346,6 +351,9 @@ Resumo funcional — a justificativa técnica de cada item está em
 POST /api/v1/auth/register
 POST /api/v1/auth/login
 POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/reset-password
 GET  /oauth2/authorization/google
 
 GET  /api/v1/categories

@@ -20,4 +20,20 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * Pool dedicado ao envio de e-mail, separado do taskExecutor do motor de
+     * match — workloads sem relação entre si não devem compartilhar a mesma
+     * capacidade.
+     */
+    @Bean
+    public TaskExecutor mailTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("mail-");
+        executor.initialize();
+        return executor;
+    }
 }

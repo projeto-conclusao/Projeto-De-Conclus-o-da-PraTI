@@ -4,6 +4,7 @@ import com.achadosedevolvidos.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,7 +20,14 @@ public class ApplicationConfig {
 
     private final UserRepository userRepository;
 
+    /**
+     * @Primary: existe um segundo bean UserDetailsService (SecurityConfig,
+     * usuário fixo do Swagger) — sem isso, o Spring não sabe qual dos dois
+     * injetar no JwtAuthenticationFilter (que pede UserDetailsService por tipo,
+     * sem qualifier) e a aplicação não sobe.
+     */
     @Bean
+    @Primary
     public UserDetailsService userDetailsService() {
         return email -> userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));

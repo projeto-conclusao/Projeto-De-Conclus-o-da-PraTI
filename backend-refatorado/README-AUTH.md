@@ -42,6 +42,17 @@ GOOGLE_CLIENT_SECRET=<seu-client-secret>
 
 OAUTH2_REDIRECT_URI=http://localhost:5173/oauth2/callback
 OAUTH2_FAILURE_REDIRECT_URI=http://localhost:5173/login?erro=oauth2
+
+# SMTP - fluxo de esqueci-minha-senha. Defaults apontam para o sandbox do
+# Mailtrap (dev/teste, não envia e-mail de verdade). Sem valor default de
+# usuário/senha — crie uma inbox grátis em https://mailtrap.io.
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=<usuario-smtp-do-mailtrap>
+MAIL_PASSWORD=<senha-smtp-do-mailtrap>
+PASSWORD_RESET_REDIRECT_URI=http://localhost:5173/reset-password
+PASSWORD_RESET_EXPIRATION_MINUTES=30  # opcional, já tem default
+
 CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
@@ -52,19 +63,50 @@ depois que o backend já concluiu o login).
 
 ## Endpoints
 
-```
-POST /api/v1/auth/register   { name, email, password }        -> AuthResponse
-POST /api/v1/auth/login      { email, password }               -> AuthResponse
-POST /api/v1/auth/refresh    { refreshToken }                   -> AuthResponse
-GET  /oauth2/authorization/google                                -> inicia login Google
-```
+Todos em `/api/v1/auth/*`, exceto o login Google (`/oauth2/...`, fora do prefixo
+`/api/v1` por ser o fluxo padrão do Spring Security).
+
+| Método | Path | Body | Resposta | Autenticação | Ação |
+|---|---|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | `{ name, email, password }` | `201` `AuthResponse` | Nenhuma | Cria a conta e já devolve o par de tokens (login automático). |
+| `POST` | `/api/v1/auth/login` | `{ email, password }` | `200` `AuthResponse` | Nenhuma | Autentica e-mail/senha e devolve o par de tokens. |
+| `POST` | `/api/v1/auth/refresh` | `{ refreshToken }` | `200` `AuthResponse` | Nenhuma (o `refreshToken` no body é a credencial) | Renova o `accessToken`. **Rotaciona**: o `refreshToken` usado é invalidado e um novo é devolvido — ver aviso abaixo. |
+| `POST` | `/api/v1/auth/logout` | `{ refreshToken }` | `200` `MessageResponse` | Nenhuma | Invalida o `refreshToken` no servidor. Sempre `200`, mesmo com token já inválido/inexistente (idempotente). |
+| `GET` | `/oauth2/authorization/google` | — | Redirect | Nenhuma | Inicia o login social com Google (fluxo de sessão/cookie, não devolve JWT). |
+| `POST` | `/api/v1/auth/forgot-password` | `{ email }` | `200` `MessageResponse` | Nenhuma | Se o e-mail existir e não for conta só-Google, envia por e-mail um link com token de redefinição. **Sempre** devolve a mesma mensagem genérica, exista ou não o e-mail (não dá pra usar a resposta para checar se um e-mail está cadastrado). |
+| `POST` | `/api/v1/auth/reset-password` | `{ token, newPassword }` | `200` `MessageResponse` | Nenhuma (o `token` recebido por e-mail é a credencial) | Define a nova senha e **revoga todos os refresh tokens da conta** — qualquer sessão ativa (nesse ou outro dispositivo) precisa logar de novo. |
 
 `AuthResponse`: `{ accessToken, refreshToken, tokenType: "Bearer", expiresInSeconds }`
+
+`MessageResponse`: `{ message: string }` — corpo padrão dos 3 endpoints novos, sempre com uma mensagem amigável em português, nunca um objeto de erro estruturado (esse é o `ApiError` do `GlobalExceptionHandler`, usado só nas respostas de erro — `400`/`401`).
+
+Erros seguem o padrão já existente do resto da API: `ApiError { status, message }`. Casos relevantes:
+- `refresh`/`reset-password` com token inválido, expirado ou já usado → `401`, mesma mensagem genérica em ambos ("Refresh token inválido ou expirado" / "Token de redefinição inválido ou expirado") — de propósito, para não dar pista a quem estiver tentando adivinhar tokens.
+- `reset-password` com `newPassword` de menos de 8 caracteres → `400` (validação de payload, igual ao `register`).
 
 ## O que o front-end precisa saber
 
 - **Fluxo JWT**: salvar `accessToken`/`refreshToken` (ex.: em memória + um storage
   seguro) e enviar `Authorization: Bearer <accessToken>` em toda chamada à API.
+- **⚠️ Rotação de refresh token**: toda vez que `/auth/refresh` é chamado, o
+  `refreshToken` enviado deixa de funcionar — o novo `refreshToken` que vem na
+  resposta é quem passa a valer. **Sempre sobrescreva o `refreshToken` salvo com o
+  que voltou de cada chamada a `/refresh`**, nunca reaproveite o antigo. Chamar
+  `/refresh` duas vezes com o mesmo token (ex.: duas abas fazendo refresh ao mesmo
+  tempo) faz a segunda chamada falhar com `401`.
+- **Logout é "fire and forget"**: `/auth/logout` sempre responde `200`, então não
+  precisa tratar erro nele — só limpar os tokens salvos no cliente depois de
+  chamar (ou mesmo antes, já que o servidor nunca recusa).
+- **Forgot-password nunca revela se o e-mail existe**: a UI deve mostrar a mesma
+  mensagem de sucesso genérica sempre que o endpoint responder `200`, independente
+  do e-mail digitado existir ou não. Não construa uma tela de "e-mail não
+  encontrado" a partir da resposta desse endpoint — a API nunca vai diferenciar
+  isso por design (evita que alguém descubra quais e-mails estão cadastrados
+  testando um por um).
+- **Reset-password desloga todos os dispositivos**: depois de um reset bem
+  sucedido, qualquer `accessToken`/`refreshToken` emitido antes deixa de
+  funcionar — inclusive o da própria aba que iniciou o fluxo, se ela estava
+  logada. Espere ter que redirecionar para a tela de login após o reset.
 - **Fluxo Google**: redirecionar o navegador para
   `http://localhost:8080/oauth2/authorization/google`. Ao final, o backend
   redireciona para `OAUTH2_REDIRECT_URI`. A partir daí, as chamadas à API precisam
@@ -86,20 +128,37 @@ docker compose up -d
 set -a && source .env && set +a && mvn spring-boot:run
 ```
 
-O schema (incluindo a tabela `users`) é criado automaticamente pelo Flyway na
-subida — `ddl-auto` está em `validate`, o Hibernate só confere se as entidades
-batem com o schema já migrado (detalhes em `ARQUITETURA.md`, seção 2).
+O schema (incluindo as tabelas `users`, `refresh_tokens` e
+`password_reset_tokens`) é criado automaticamente pelo Flyway na subida —
+`ddl-auto` está em `validate`, o Hibernate só confere se as entidades batem com
+o schema já migrado (detalhes em `ARQUITETURA.md`, seção 2).
 
 ## Testes incluídos
 
-`src/test/java/.../auth/service/JwtServiceTest.java` cobre geração, validação,
-expiração e verificação de subject do token. Rode com `mvn test`.
+- `auth/service/JwtServiceTest.java` — geração, validação, expiração e
+  verificação de subject do token. Unitário, sem Spring/banco.
+- `auth/service/AuthServiceTest.java` — todos os fluxos (register, login,
+  refresh com rotação, logout, forgot-password, reset-password), caminho feliz
+  e principais erros de cada um. Unitário (Mockito), sem Spring/banco.
+- `auth/controller/AuthControllerIT.java` — os mesmos fluxos de ponta a ponta
+  (HTTP real → Postgres real via Testcontainers). O e-mail de redefinição de
+  senha é capturado de verdade por um servidor SMTP fake em memória (GreenMail,
+  configurado em `support/IntegrationTestSupport.java`) — o teste extrai o
+  token do link recebido, nunca lê direto do banco (lá só existe o hash).
+
+```bash
+mvn test                             # unitários, rápido, sem Docker
+mvn verify -Dskip.unit.tests=true    # integração, precisa do Docker rodando
+```
 
 ## Próximos passos sugeridos (fora do escopo deste módulo)
 
 - Rate limiting no `/api/v1/auth/login` (ex.: Bucket4j) para mitigar força bruta.
 - Publicar o app OAuth2 no Google Cloud Console (hoje em modo "Testing", só
   e-mails cadastrados como test user conseguem logar via Google).
+- Job de limpeza para linhas expiradas/revogadas em `refresh_tokens` e
+  `password_reset_tokens` — hoje elas só se acumulam, sem impacto perceptível
+  na escala atual, mas crescimento sem limite eventualmente vai pedir isso.
 
 > A lista completa do que já foi entregue nesta refatoração (incluindo os dois
 > itens que saíram desta lista — `AuthenticatedUser` no `ItemController` e
