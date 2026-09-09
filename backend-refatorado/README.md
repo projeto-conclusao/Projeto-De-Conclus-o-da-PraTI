@@ -15,6 +15,8 @@ Documentação relacionada:
 - **`README-AUTH.md`** — detalhes dos dois mecanismos de autenticação
   (Bearer JWT e OAuth2/Google): endpoints, contratos, o que o front-end precisa
   enviar/receber.
+- **`README-OPENAPI.md`** — como gerar tipos TypeScript automaticamente a
+  partir da API real (Swagger UI + `openapi-typescript`/`orval`).
 
 ## Stack
 

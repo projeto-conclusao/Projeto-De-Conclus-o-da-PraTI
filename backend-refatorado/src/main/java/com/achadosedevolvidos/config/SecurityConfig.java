@@ -75,6 +75,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/oauth2/**", "/login/**").permitAll()
+                        // Spec OpenAPI + Swagger UI: só documentação, nenhum dado sensível
+                        // exposto aqui. Público em dev/local por decisão do time — revisitar
+                        // antes de expor este ambiente em produção.
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Handshake do WebSocket: a autenticação real acontece no
                         // STOMP CONNECT (StompAuthChannelInterceptor), não aqui.
                         .requestMatchers("/ws/**").permitAll()
