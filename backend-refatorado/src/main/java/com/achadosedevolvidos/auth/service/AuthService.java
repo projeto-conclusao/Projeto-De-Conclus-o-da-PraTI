@@ -105,7 +105,7 @@ public class AuthService {
         try {
             email = jwtService.extractUsername(request.refreshToken());
         } catch (JwtException | IllegalArgumentException e) {
-            // Token malformado ou assinado com outra chave: mesmo tratamento de
+            // Token mal formado ou assinado com outra chave: mesmo tratamento de
             // "inválido" dado abaixo a um token bem-formado porém expirado.
             throw new AppException("Refresh token inválido ou expirado", HttpStatus.UNAUTHORIZED);
         }

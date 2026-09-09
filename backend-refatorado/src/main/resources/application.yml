@@ -75,5 +75,12 @@ app:
     redirect-uri: ${PASSWORD_RESET_REDIRECT_URI:http://localhost:5173/reset-password}
     expiration-minutes: ${PASSWORD_RESET_EXPIRATION_MINUTES:30}
 
+  swagger:
+    # Credencial única (Basic Auth) para abrir /swagger-ui e /v3/api-docs — só o
+    # time de dev (frontend + backend) deve ter isso, não é uma conta de usuário
+    # do app. Sem default: sem configurar, a aplicação não sobe.
+    username: ${SWAGGER_USERNAME}
+    password: ${SWAGGER_PASSWORD}
+
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}

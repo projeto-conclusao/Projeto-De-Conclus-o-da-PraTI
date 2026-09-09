@@ -170,6 +170,7 @@ Preencha no `.env`:
 | `OAUTH2_REDIRECT_URI` / `OAUTH2_FAILURE_REDIRECT_URI` | Não | Para onde o navegador volta após o login Google (sucesso/falha) |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | Só para testar "esqueci minha senha" | Credenciais SMTP (ex.: Mailtrap). Sem valor padrão — sem elas, a aplicação **não sobe**. `MAIL_HOST`/`MAIL_PORT` têm default (sandbox do Mailtrap). Veja `README-AUTH.md`. |
 | `PASSWORD_RESET_REDIRECT_URI` / `PASSWORD_RESET_EXPIRATION_MINUTES` | Não | Página do front-end para onde aponta o link de redefinição, e validade do token (têm default) |
+| `SWAGGER_USERNAME` / `SWAGGER_PASSWORD` | Sim | Credencial (Basic Auth) para abrir `/swagger-ui` e `/v3/api-docs` — combine com o time (frontend + backend), não é conta de usuário do app. Sem valor padrão — a aplicação **não sobe** sem isso. Veja `README-OPENAPI.md`. |
 | `CORS_ALLOWED_ORIGINS` | Não | Origem(ns) do front-end permitidas via CORS |
 
 ### 2.2. Subindo o banco de dados
