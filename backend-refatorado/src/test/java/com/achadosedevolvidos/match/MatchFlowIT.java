@@ -46,12 +46,12 @@ class MatchFlowIT extends IntegrationTestSupport {
 
         ItemResponse perdido = criarItem(donoDoPerdido, new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_CHAVES, marcador + " chave do apartamento",
-                null, "Rua A, 100", -23.5505, -46.6333, agora, null
+                "Perdida no bolso da calça", "Chave do apartamento", "Rua A, 100", -23.5505, -46.6333, agora, null
         ));
 
         criarItem(donoDoEncontrado, new CreateItemRequest(
                 Item.ItemType.ENCONTRADO, CATEGORIA_CHAVES, marcador + " molho de chaves achado",
-                null, "Rua A, 120", -23.5507, -46.6335, agora.plusHours(1), null
+                "Achado próximo à esquina", "Molho de chaves achado", "Rua A, 120", -23.5507, -46.6335, agora.plusHours(1), null
         ));
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
@@ -70,11 +70,11 @@ class MatchFlowIT extends IntegrationTestSupport {
 
         ItemResponse primeiroPerdido = criarItem(usuario, new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_CHAVES, marcador + " chave 1",
-                null, null, -23.5505, -46.6333, agora, null
+                "Perdida em algum lugar", "Chave 1 perdida", null, -23.5505, -46.6333, agora, null
         ));
         criarItem(usuario, new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_CHAVES, marcador + " chave 2",
-                null, null, -23.5505, -46.6333, agora, null
+                "Perdida em algum lugar", "Chave 2 perdida", null, -23.5505, -46.6333, agora, null
         ));
 
         // Não há evento "match não vai acontecer" para esperar — damos um tempo

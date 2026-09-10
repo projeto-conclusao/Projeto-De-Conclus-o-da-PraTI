@@ -268,7 +268,7 @@ Resumo funcional — a justificativa técnica de cada item está em
   `com.achadosedevolvidos`, dividido em `auth`, `user`, `category`, `item`,
   `match`, `chat`, `config` e `shared`, eliminando a duplicidade de
   controllers/entidades do protótipo original.
-- **Schema de banco versionado via Flyway** (`V1` a `V7`, em
+- **Schema de banco versionado via Flyway** (`V1` a `V11`, em
   `src/main/resources/db/migration`), com `ddl-auto: validate` — o Hibernate
   deixou de criar/alterar tabelas por conta própria.
 - **Autenticação dupla e isolada** (detalhes em `README-AUTH.md`):
@@ -316,6 +316,10 @@ Resumo funcional — a justificativa técnica de cada item está em
   chat e o fluxo assíncrono completo de match.
 - **Pipeline de CI no GitHub Actions** (ver seção 3) — compila e roda as duas
   suítes de teste a cada push/PR.
+- **Campo `shortDescription` em `Item`** (migrations `V10`/`V11`): itens
+  passaram a ter uma descrição curta (`short_description`, até 100
+  caracteres, obrigatória) usada em listagens, além da descrição completa
+  (`description`), que também se tornou obrigatória — antes aceitava `NULL`.
 - **3 bugs de correção encontrados e corrigidos ao escrever os testes de
   integração** (nenhum coberto antes, porque testes com mocks não exercitam
   proxies do Hibernate nem o ciclo de vida real de uma transação):

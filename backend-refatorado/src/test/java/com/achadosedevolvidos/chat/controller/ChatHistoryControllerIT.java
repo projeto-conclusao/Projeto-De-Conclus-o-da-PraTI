@@ -92,12 +92,16 @@ class ChatHistoryControllerIT extends IntegrationTestSupport {
         Item lostItem = itemRepository.save(Item.builder()
                 .user(dono1.user()).category(categoria).type(Item.ItemType.PERDIDO)
                 .title("Documento perdido " + UUID.randomUUID())
+                .description("Documento perdido para teste")
+                .shortDescription("Documento perdido")
                 .eventDate(LocalDateTime.now().minusHours(1))
                 .build());
 
         Item foundItem = itemRepository.save(Item.builder()
                 .user(dono2.user()).category(categoria).type(Item.ItemType.ENCONTRADO)
                 .title("Documento encontrado " + UUID.randomUUID())
+                .description("Documento encontrado para teste")
+                .shortDescription("Documento encontrado")
                 .eventDate(LocalDateTime.now())
                 .build());
 
