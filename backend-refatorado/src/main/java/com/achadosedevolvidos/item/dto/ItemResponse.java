@@ -11,6 +11,7 @@ public record ItemResponse(
         UUID userId,
         UUID categoryId,
         String categoryName,
+        String categoryIconUrl,
         Item.ItemType type,
         Item.ItemStatus status,
         String title,
