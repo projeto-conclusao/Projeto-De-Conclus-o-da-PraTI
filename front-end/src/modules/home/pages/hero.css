@@ -1,87 +1,90 @@
 .hero {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 70px;
-
-    min-height: 280px;
-    padding: 30px 60px;
-
+    justify-content: space-between;
+    gap: 40px;
     background-color: var(--background-color);
-    color: var(--primary-color-text);
 }
 
 .hero-content {
-    width: 270px;
+   flex: 1;
 }
 
-.hero-content h1 {
-    margin: 0 0 15px;
-
-    font-size: 32px;
-    line-height: 1.1;
+.hero h1 {
     color: var(--primary-color-text);
+    font-family: var(--font-principal);
+    font-size: 28px;
+    font-weight: 630;
+    padding: 0px 0px 0px 48px;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
 }
 
-.hero-content h1 span {
+.hero span#perto {
+    color: var(--primary-color-blue);
+    font-family: var(--font-principal);
+    padding: 0px 6px 0px 6px;
+}
+
+.hero span#imagina {
     color: var(--primary-color-green);
+    font-family: var(--font-principal);
+    padding: 0px 6px 0px 6px;
 }
 
-.hero-content p {
-    margin-bottom: 20px;
-
-    font-size: 11px;
-    line-height: 1.5;
-
+.hero p {
     color: var(--secondary-color-gray);
+    font-family: var(--font-principal);
+    font-size: 14px;
+    padding: 12px 0px 12px 48px;
 }
 
 .hero-buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 16px;
+    align-items: center;
 }
 
-.btn_perdiObjeto,
-.btn_encontreiObjeto {
-    height: 30px;
-    padding: 0 14px;
-
-    border-radius: 4px;
-
-    font-size: 10px;
-    font-weight: 600;
-
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-}
-
-.btn_perdiObjeto {
+.btn_perdiObjeto{
     background-color: var(--primary-color-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: 1px solid var(--primary-color-white);
+    border-radius: 5px;
+    font-family: var(--font-principal);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
     color: var(--secondary-color-white);
-    border: 1px solid var(--primary-color-blue);
+    margin-left: 42px;
 }
 
-.btn_encontreiObjeto {
-    background-color: var(--secondary-color-white);
+.btn_encontreiObjeto{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    background-color: transparent;
     color: var(--primary-color-green);
     border: 1px solid var(--primary-color-green);
+    border-radius: 5px;
+    font-family: var(--font-principal);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 
-@media (max-width: 768px) {
-    .hero {
-        flex-direction: column;
-        padding: 30px 20px;
-    }
 
-    .hero-content {
-        width: 100%;
-        text-align: center;
-    }
 
-    .hero-buttons {
-        justify-content: center;
-    }
 
-}
+
+
+
