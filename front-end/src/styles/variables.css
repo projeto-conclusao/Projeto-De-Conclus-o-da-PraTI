@@ -6,7 +6,9 @@
     --secondary-color-black: #000000; /* cor que não muda ao trocar tema*/
     --secondary-color-white: #FFFFFF;
 
-    --border-color: #D9DFE6; 
+    --shadow-hover: 0 4px 15px rgba(0, 0, 0, 0.12);
+
+    --border-color: #ddd; 
     --background-color: #F5F7FA; 
     --card-color: #F8FAFC;
 
@@ -29,7 +31,10 @@
     --primary-color-text: #FFFFFF; 
     --secondary-color-text: #000000;
 
+    --shadow-hover: 0 4px 15px rgba(246, 245, 245, 0.12);
+
     --background-color: #08080A; 
     --card-color: #191818;
+    --border-color: #dddddd8e;
     
 }

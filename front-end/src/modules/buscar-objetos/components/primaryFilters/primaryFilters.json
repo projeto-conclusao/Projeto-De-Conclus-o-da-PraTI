@@ -1,0 +1,24 @@
+[
+    {
+        "categoria": "Objeto",
+        "icon": "lupaGray",
+        "placeholder": "Ex: Carteira, celular, mochila...",
+        "type": "text"
+    }, 
+    {
+        "categoria": "Localização",
+        "icon": "pinGray",
+        "placeholder": "Ex: Porto Alegre, Centro...",
+        "type": "text"
+    }, 
+    {
+        "categoria": "Categoria",
+        "icon": "gridGray",
+        "placeholder": "Todas as categorias"
+    }, 
+    {
+        "categoria": "Período",
+        "icon": "calendarGray",
+        "placeholder": "Qualquer período"
+    }
+] 

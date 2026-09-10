@@ -30,7 +30,7 @@ function App() {
             </header>
 
             <main className="content">
-                <Outlet /> {/* Aqui entra as paginas que estarão no roteador */}
+                <Outlet context={[tema]}/> {/* Aqui entra as paginas que estarão no roteador */}
             </main>
         </div>
     )

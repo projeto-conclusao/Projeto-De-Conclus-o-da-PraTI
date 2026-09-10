@@ -83,8 +83,10 @@ li{ list-style: none }
 
 .button:hover{
     cursor: pointer;
-    box-shadow: 0 0 0.2rem var(--primary-color-text)
+    box-shadow: var(--shadow-hover);
 }
+
+
 
 .cabecalho__buttons{
     display: flex;

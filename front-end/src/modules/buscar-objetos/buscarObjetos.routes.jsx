@@ -1,11 +1,9 @@
-import BuscarObjetos from "./page/BuscarObjetos.jsx" ; 
+import BuscarObjetos from "./pages/BuscarObjetos.jsx" ; 
 
 const routerBuscarObjetos = 
 {
     path: "/buscar-objetos", 
     element: <BuscarObjetos />
 }
-    
-
 
 export default routerBuscarObjetos;

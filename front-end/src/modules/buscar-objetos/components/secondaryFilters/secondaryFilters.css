@@ -1,0 +1,27 @@
+.button__secondary__filter{
+    font-size: 1.5rem;
+    font-weight: 500;
+    border: 0.1rem solid var(--border-color);
+    color: var(--primary-color-text); 
+    background-color: var(--card-color);
+    cursor: pointer;
+    border-radius: 3rem;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    text-align: start;
+}
+
+.text__secondary__filters{
+    margin-left: 1rem;
+}
+
+.icon__secondary__filter{
+    position: absolute;
+    left: 10%;
+    top: 25%;
+    height: 1.7rem;
+}
+
+.secondary__active{
+    background-color: #0049e8;
+    color: var(--secondary-color-white);
+}

@@ -1,0 +1,35 @@
+.input__container {
+    position: relative;
+}
+
+.text__filter{
+    cursor: pointer;
+    color: var(--primary-color-text);
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.icon__filter{
+    position: absolute;
+    left: 5%;
+    top: 25%;
+    height: 2.5rem;
+    z-index: 2;
+}
+
+.input__filter{
+    position: relative;
+    font-size: 1.5rem;
+    border: 0.1rem solid var(--border-color);
+    color: var(--primary-color-text); 
+    background-color: var(--card-color);
+    border-radius: 1rem;
+    padding: 1.7rem 1.5rem 1.7rem 5rem;
+    width: 30rem;
+    text-align: start;
+    z-index: 2;
+}
+
+.input__filter:hover{
+    box-shadow: var(--shadow-hover);
+}

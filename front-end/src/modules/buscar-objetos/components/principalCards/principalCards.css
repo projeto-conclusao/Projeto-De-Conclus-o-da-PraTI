@@ -1,0 +1,118 @@
+.card__principal{
+    display: flex;
+    gap: 3rem;
+    border: 0.1rem solid #999999;
+    background-color: var(--card-color);
+    border-radius: 1rem;
+    padding: 1rem;
+    height: 22rem;
+    width: 100%;
+}
+
+.image__card{
+    border-radius: 1rem;
+    height: 20rem;
+    width: 32rem;
+    object-fit: cover;
+}
+
+.titulo__principal{
+    color: var(--primary-color-text);
+    font-weight: 600;
+}
+
+.principal__meio{
+    display: flex;
+    flex-direction: column;
+    gap: 8rem;
+}
+
+.categoria__status{
+    display: flex;
+    gap: 2rem;
+    font-size: 1.8rem;
+}
+
+.data__hora{
+    display: flex;
+    gap: 2rem;
+    font-size: 1.3rem;
+}
+
+.data__principal, .hora__principal{
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.status__red, .status__orange, .status__green{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 1rem;
+    font-size: 1.5rem; 
+    font-weight: 500;
+    padding: 0.4rem 1rem;
+}
+
+.status__red{ background-color: var(--error-tag-color)}
+.status__red span { color: var(--error-text-color)}
+
+.status__orange{ background-color: var(--analysis-tag-color)}
+.status__orange span { color: var(--analysis-text-color)}
+
+.status__green{ background-color: var(--success-tag-color)}
+.status__green span { color: var(--success-text-color)}
+
+
+.descricao__principal{
+    font-size: 1.3rem;
+    margin-left: 0.5rem; 
+    color: var(--secondary-color-gray)
+}
+
+
+.image__principal{
+    height: 2rem;
+    margin-bottom: 0.2rem;
+}
+
+.icon__categoria{
+    height: 2rem;
+}
+
+.categoria__principal{
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 400;
+    gap: 0.7rem;
+}
+
+.principal__direita{
+    display: flex;
+    align-items: end;
+    justify-content: end;
+    flex: 1
+}
+
+.button__principal{
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; 
+    padding: 0.6rem 2.5rem;
+    font-weight: 500;
+    border: 0.2rem solid var(--primary-color-blue);
+    border-radius: 1rem;
+    font-family: var(--font-principal);
+    cursor: pointer;
+}
+
+.detalhes__principal{
+    color: var(--primary-color-blue)
+}
+
+.arrow__button__principal{
+    margin-top: 0.25rem;
+    height: 1.5rem;
+}
