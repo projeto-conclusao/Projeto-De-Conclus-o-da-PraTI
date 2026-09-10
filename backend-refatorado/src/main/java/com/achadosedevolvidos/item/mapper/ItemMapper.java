@@ -21,6 +21,7 @@ public class ItemMapper {
                 item.getUser().getId(),
                 item.getCategory().getId(),
                 item.getCategory().getName(),
+                item.getCategory().getIconUrl(),
                 item.getType(),
                 item.getStatus(),
                 item.getTitle(),

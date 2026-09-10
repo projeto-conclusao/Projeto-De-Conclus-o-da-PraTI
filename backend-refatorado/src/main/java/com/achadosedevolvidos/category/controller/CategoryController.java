@@ -24,7 +24,7 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> findAll() {
         List<CategoryResponse> categories = categoryRepository.findAll().stream()
-                .map(category -> new CategoryResponse(category.getId(), category.getName()))
+                .map(category -> new CategoryResponse(category.getId(), category.getName(), category.getIconUrl()))
                 .toList();
         return ResponseEntity.ok(categories);
     }
