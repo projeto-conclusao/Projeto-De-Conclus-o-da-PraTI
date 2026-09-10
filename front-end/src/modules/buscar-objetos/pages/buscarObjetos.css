@@ -80,6 +80,7 @@
     margin-top: 0.8rem;
 }
 
+
 .container__principal{
     width: 100%;
     display: flex;
@@ -94,4 +95,44 @@
 .text__principal{
     font-size: 2.5rem;
     font-weight: 500;
+}
+
+.principal__footer{
+    display: flex;
+    align-items: center;
+    margin-top: 1rem; 
+    justify-content: space-between;
+}
+
+.paginas__principal{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.paginas{
+    padding: 0.1rem 0.9rem; 
+    border-radius: 0.7rem;
+    color: var(--primary-color-text)
+}
+
+.pagina__ativa{
+    background-color: var(--primary-color-blue);
+    padding: 0.1rem 0.9rem; 
+    border-radius: 0.7rem;
+    color: var(--secondary-color-white);
+}
+
+.button__arrow{
+    cursor: pointer;
+    padding: 0.01rem;
+}
+
+.arrow__left{
+    transform: rotate(90deg);
+}
+
+.arrow__right{
+    transform: rotate(270deg)
 }

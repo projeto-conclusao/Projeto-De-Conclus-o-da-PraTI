@@ -1,16 +1,34 @@
+import { useState } from 'react'; 
 import './buscarObjetos.css';
 
-import sumaryIcon from '../../../assets/icons/buscarObjetos/sumary.svg'
-import lupaIcon from '../../../assets/icons/buscarObjetos/lupa.svg'
+import sumaryIcon from '../../../assets/icons/buscarObjetos/sumary.svg';
+import lupaIcon from '../../../assets/icons/buscarObjetos/lupa.svg';
+import arrowGray from '../../../assets/icons/buscarObjetos/arrow-gray.png'
 
 import PrimaryFilters from '../components/primaryFilters/PrimaryFilters.jsx';
 import SecondaryFilters from '../components/secondaryFilters/SecondaryFilters.jsx'; 
 import PrincipalCards from '../components/principalCards/PrincipalCards.jsx';
 
+
 function BuscarObjetos(){
 
+    const [pagina, setPagina] = useState(1); 
 
+    const total = 80
+    const totalPorPagina = 6;
+    const totalDePaginas = [];
+    const totalDePaginasNumerico = Math.ceil(total / totalPorPagina)
 
+    for(let i = 1; i < totalDePaginasNumerico + 1; i++){
+        totalDePaginas.push(i)
+    }
+
+    let inicio = totalPorPagina * (pagina - 1);
+    let fim = inicio + totalPorPagina;
+
+    function alternarPagina(pagina){
+        setPagina(pagina);
+    }
 
     return (
         <section className="buscar__objetos">
@@ -34,7 +52,7 @@ function BuscarObjetos(){
             </div>
 
             <div className='container__card'>
-                <PrimaryFilters />
+                {<PrimaryFilters key='' />}
 
                 <button className='button buscar'>
                         <img className="lupa__icon" src={lupaIcon} alt="" />
@@ -43,7 +61,7 @@ function BuscarObjetos(){
             </div>
 
             <div className='container__card'>
-                <SecondaryFilters />
+                <SecondaryFilters key='' />
             </div>
 
             <div className='principal container__card'>
@@ -55,11 +73,27 @@ function BuscarObjetos(){
                     </div>
 
                     <div className='principal__cards'>
-                        <PrincipalCards />
+                        <PrincipalCards  key='' inicio={inicio} fim={fim}/>
                     </div>
 
-                    <div>
-                        <span>mostrando {} de {} resultados</span>
+                    <div className='principal__footer'>
+                        <span>mostrando {fim > total ? total : fim} de {total} resultados</span>
+
+                        <div className="paginas__principal">
+
+                            <div onClick={() => pagina < 1 ?  setPagina(1) : setPagina(pagina - 1)} className='button button__arrow'>
+                                    <img className='arrow__left' src={arrowGray} />
+                            </div>
+
+                            {totalDePaginas.map((valor) => {
+                                return (<p onClick={() => {alternarPagina(valor)}} className={pagina === valor ? 'paginas pagina__ativa' : 'paginas'}> {valor} </p>)
+                            })}
+
+                            <div onClick={() => pagina > totalDePaginasNumerico ? setPagina(totalDePaginasNumerico) : setPagina(pagina + 1)} className='button button__arrow'>
+                                    <img className='arrow__right' src={arrowGray} />
+                            </div>
+
+                        </div>
                     </div>
 
                 </div>
