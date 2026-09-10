@@ -33,7 +33,7 @@ class ItemControllerIT extends IntegrationTestSupport {
 
         CreateItemRequest request = new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, marcador + " carteira preta",
-                "Perdida perto da entrada principal", "Bloco A", -23.5505, -46.6333,
+                "Perdida perto da entrada principal", "Carteira preta perdida", "Bloco A", -23.5505, -46.6333,
                 LocalDateTime.now().minusHours(2), List.of("http://exemplo.com/foto1.png")
         );
 
@@ -44,6 +44,7 @@ class ItemControllerIT extends IntegrationTestSupport {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value(marcador + " carteira preta"))
                 .andExpect(jsonPath("$.status").value("ANALISANDO"))
+                .andExpect(jsonPath("$.shortDescription").value("Carteira preta perdida"))
                 .andReturn();
 
         ItemResponse created = objectMapper.readValue(createResult.getResponse().getContentAsString(), ItemResponse.class);
@@ -70,7 +71,7 @@ class ItemControllerIT extends IntegrationTestSupport {
     void rainyDay_deveRecusarCriacaoSemAutenticacao() throws Exception {
         CreateItemRequest request = new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item sem dono",
-                null, null, -23.55, -46.63, LocalDateTime.now(), null
+                null, null, null, -23.55, -46.63, LocalDateTime.now(), null
         );
 
         mockMvc.perform(post("/api/v1/items")
@@ -97,7 +98,112 @@ class ItemControllerIT extends IntegrationTestSupport {
 
         CreateItemRequest request = new CreateItemRequest(
                 Item.ItemType.PERDIDO, UUID.randomUUID(), "Item com categoria fantasma",
-                null, null, -23.55, -46.63, LocalDateTime.now(), null
+                null, null, null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void sunnyDay_deveAceitarDescricaoCurtaComExatamente100Caracteres() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Descricao Curta No Limite");
+        String descricaoCurtaNoLimite = "x".repeat(100);
+
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item com descrição curta no limite",
+                "Descrição completa do item", descricaoCurtaNoLimite, null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.shortDescription").value(descricaoCurtaNoLimite));
+    }
+
+    @Test
+    void rainyDay_deveRecusarCriacaoSemDescricao() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Sem Descricao");
+
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item sem descrição",
+                null, "Descrição curta válida", null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rainyDay_deveRecusarCriacaoComDescricaoContendoApenasEspacosEmBranco() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Descricao So Espacos");
+
+        // Usuário aperta a barra de espaço e salva: sem @NotBlank isso passaria
+        // como se fosse uma descrição preenchida, já que não é null nem "".
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item com descrição só de espaços",
+                "     ", "Descrição curta válida", null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rainyDay_deveRecusarCriacaoSemDescricaoCurta() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Sem Descricao Curta");
+
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item sem descrição curta",
+                "Descrição completa do item", null, null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rainyDay_deveRecusarCriacaoComDescricaoCurtaMaiorQue100Caracteres() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Descricao Curta Longa");
+        String descricaoCurtaInvalida = "x".repeat(101);
+
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item com descrição curta longa demais",
+                "Descrição completa do item", descricaoCurtaInvalida, null, -23.55, -46.63, LocalDateTime.now(), null
+        );
+
+        mockMvc.perform(post("/api/v1/items")
+                        .header("Authorization", user.authorizationHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rainyDay_deveContarEspacosEmBrancoComoCaracteresNaDescricaoCurta() throws Exception {
+        AuthenticatedTestUser user = registerAndAuthenticate("Espacos Sao Caracteres");
+        // 13 caracteres de texto + 90 espaços em branco = 103 caracteres.
+        // Se os espaços não fossem contados (ex.: por um trim antes da validação),
+        // esta descrição passaria como se tivesse só 13 caracteres.
+        String descricaoCurtaComEspacos = "Chave perdida" + " ".repeat(90);
+
+        CreateItemRequest request = new CreateItemRequest(
+                Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item com espaços em branco na descrição curta",
+                "Descrição completa do item perdido", descricaoCurtaComEspacos, null, -23.55, -46.63, LocalDateTime.now(), null
         );
 
         mockMvc.perform(post("/api/v1/items")
@@ -138,7 +244,7 @@ class ItemControllerIT extends IntegrationTestSupport {
     void rainyDay_deveIgnorarTokenInvalidoERecusarComoAnonimo() throws Exception {
         CreateItemRequest request = new CreateItemRequest(
                 Item.ItemType.PERDIDO, CATEGORIA_ELETRONICOS, "Item com token quebrado",
-                null, null, -23.55, -46.63, LocalDateTime.now(), null
+                null, null, null, -23.55, -46.63, LocalDateTime.now(), null
         );
 
         mockMvc.perform(post("/api/v1/items")

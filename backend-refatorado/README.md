@@ -15,6 +15,8 @@ Documentação relacionada:
 - **`README-AUTH.md`** — detalhes dos dois mecanismos de autenticação
   (Bearer JWT e OAuth2/Google): endpoints, contratos, o que o front-end precisa
   enviar/receber.
+- **`README-OPENAPI.md`** — como gerar tipos TypeScript automaticamente a
+  partir da API real (Swagger UI + `openapi-typescript`/`orval`).
 
 ## Stack
 
@@ -168,6 +170,7 @@ Preencha no `.env`:
 | `OAUTH2_REDIRECT_URI` / `OAUTH2_FAILURE_REDIRECT_URI` | Não | Para onde o navegador volta após o login Google (sucesso/falha) |
 | `MAIL_USERNAME` / `MAIL_PASSWORD` | Só para testar "esqueci minha senha" | Credenciais SMTP (ex.: Mailtrap). Sem valor padrão — sem elas, a aplicação **não sobe**. `MAIL_HOST`/`MAIL_PORT` têm default (sandbox do Mailtrap). Veja `README-AUTH.md`. |
 | `PASSWORD_RESET_REDIRECT_URI` / `PASSWORD_RESET_EXPIRATION_MINUTES` | Não | Página do front-end para onde aponta o link de redefinição, e validade do token (têm default) |
+| `SWAGGER_USERNAME` / `SWAGGER_PASSWORD` | Sim | Credencial (Basic Auth) para abrir `/swagger-ui` e `/v3/api-docs` — combine com o time (frontend + backend), não é conta de usuário do app. Sem valor padrão — a aplicação **não sobe** sem isso. Veja `README-OPENAPI.md`. |
 | `CORS_ALLOWED_ORIGINS` | Não | Origem(ns) do front-end permitidas via CORS |
 
 ### 2.2. Subindo o banco de dados
@@ -265,7 +268,7 @@ Resumo funcional — a justificativa técnica de cada item está em
   `com.achadosedevolvidos`, dividido em `auth`, `user`, `category`, `item`,
   `match`, `chat`, `config` e `shared`, eliminando a duplicidade de
   controllers/entidades do protótipo original.
-- **Schema de banco versionado via Flyway** (`V1` a `V7`, em
+- **Schema de banco versionado via Flyway** (`V1` a `V11`, em
   `src/main/resources/db/migration`), com `ddl-auto: validate` — o Hibernate
   deixou de criar/alterar tabelas por conta própria.
 - **Autenticação dupla e isolada** (detalhes em `README-AUTH.md`):
@@ -313,6 +316,10 @@ Resumo funcional — a justificativa técnica de cada item está em
   chat e o fluxo assíncrono completo de match.
 - **Pipeline de CI no GitHub Actions** (ver seção 3) — compila e roda as duas
   suítes de teste a cada push/PR.
+- **Campo `shortDescription` em `Item`** (migrations `V10`/`V11`): itens
+  passaram a ter uma descrição curta (`short_description`, até 100
+  caracteres, obrigatória) usada em listagens, além da descrição completa
+  (`description`), que também se tornou obrigatória — antes aceitava `NULL`.
 - **3 bugs de correção encontrados e corrigidos ao escrever os testes de
   integração** (nenhum coberto antes, porque testes com mocks não exercitam
   proxies do Hibernate nem o ciclo de vida real de uma transação):

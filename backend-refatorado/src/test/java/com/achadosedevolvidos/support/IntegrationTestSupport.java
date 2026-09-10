@@ -96,6 +96,11 @@ public abstract class IntegrationTestSupport {
         // GreenMail (ServerSetupTest.SMTP) não fala STARTTLS — só o Mailtrap real
         // (produção/dev) precisa disso.
         registry.add("spring.mail.properties.mail.smtp.starttls.enable", () -> "false");
+
+        // app.swagger.* também não tem default — mesmo motivo do app.jwt.secret
+        // acima.
+        registry.add("app.swagger.username", () -> "swagger-teste");
+        registry.add("app.swagger.password", () -> "senha-swagger-teste");
     }
 
     @Autowired

@@ -85,6 +85,18 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!--
+          Gera a spec OpenAPI (/v3/api-docs) e o Swagger UI (/swagger-ui.html) em
+          runtime, a partir dos @RestController/DTOs já existentes — nada de YAML
+          escrito à mão, então a documentação nunca fica desatualizada em relação
+          ao código. Ver README-OPENAPI.md.
+        -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
         <!-- Segurança: Bearer JWT (login local) + OAuth2 Login (Google) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

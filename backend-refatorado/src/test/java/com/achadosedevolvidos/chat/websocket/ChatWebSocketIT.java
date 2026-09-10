@@ -150,12 +150,16 @@ class ChatWebSocketIT extends IntegrationTestSupport {
         Item lostItem = itemRepository.save(Item.builder()
                 .user(dono1.user()).category(categoria).type(Item.ItemType.PERDIDO)
                 .title("Casaco perdido " + UUID.randomUUID())
+                .description("Casaco perdido para teste")
+                .shortDescription("Casaco perdido")
                 .eventDate(LocalDateTime.now().minusHours(1))
                 .build());
 
         Item foundItem = itemRepository.save(Item.builder()
                 .user(dono2.user()).category(categoria).type(Item.ItemType.ENCONTRADO)
                 .title("Casaco encontrado " + UUID.randomUUID())
+                .description("Casaco encontrado para teste")
+                .shortDescription("Casaco encontrado")
                 .eventDate(LocalDateTime.now())
                 .build());
 

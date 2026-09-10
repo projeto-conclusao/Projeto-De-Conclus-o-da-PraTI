@@ -51,8 +51,11 @@ public class Item extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
+
+    @Column(name = "short_description", length = 100, nullable = false)
+    private String shortDescription;
 
     private String locationText;
     private Double latitude;
