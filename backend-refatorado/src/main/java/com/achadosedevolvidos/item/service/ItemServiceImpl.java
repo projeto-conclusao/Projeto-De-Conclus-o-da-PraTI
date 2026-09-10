@@ -56,6 +56,7 @@ public class ItemServiceImpl implements ItemService {
                 .type(request.type())
                 .title(request.title())
                 .description(request.description())
+                .shortDescription(request.shortDescription())
                 .locationText(request.locationText())
                 .latitude(request.latitude())
                 .longitude(request.longitude())

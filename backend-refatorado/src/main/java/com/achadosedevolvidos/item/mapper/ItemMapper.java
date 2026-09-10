@@ -25,6 +25,7 @@ public class ItemMapper {
                 item.getStatus(),
                 item.getTitle(),
                 item.getDescription(),
+                item.getShortDescription(),
                 item.getLocationText(),
                 item.getLatitude(),
                 item.getLongitude(),

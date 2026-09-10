@@ -79,7 +79,7 @@ class ItemServiceImplTest {
 
         CreateItemRequest request = new CreateItemRequest(
                 Item.ItemType.PERDIDO, category.getId(), "Carteira preta", "Perdida no ônibus",
-                "Terminal Central", -23.55, -46.63, LocalDateTime.now(), List.of("http://img/1.png")
+                "Carteira preta perdida", "Terminal Central", -23.55, -46.63, LocalDateTime.now(), List.of("http://img/1.png")
         );
 
         ItemResponse response = itemService.createAndAnalyze(user.getId(), request);
@@ -87,6 +87,7 @@ class ItemServiceImplTest {
         assertThat(response.title()).isEqualTo("Carteira preta");
         assertThat(response.userId()).isEqualTo(user.getId());
         assertThat(response.categoryId()).isEqualTo(category.getId());
+        assertThat(response.shortDescription()).isEqualTo("Carteira preta perdida");
         assertThat(response.images()).hasSize(1);
 
         ArgumentCaptor<ItemCreatedEvent> eventCaptor = ArgumentCaptor.forClass(ItemCreatedEvent.class);
@@ -148,8 +149,8 @@ class ItemServiceImplTest {
 
     private CreateItemRequest validRequest() {
         return new CreateItemRequest(
-                Item.ItemType.PERDIDO, category.getId(), "Carteira preta", null,
-                null, -23.55, -46.63, LocalDateTime.now(), null
+                Item.ItemType.PERDIDO, category.getId(), "Carteira preta", "Perdida no ônibus",
+                "Carteira preta perdida", null, -23.55, -46.63, LocalDateTime.now(), null
         );
     }
 }

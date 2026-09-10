@@ -15,6 +15,7 @@ public record ItemResponse(
         Item.ItemStatus status,
         String title,
         String description,
+        String shortDescription,
         String locationText,
         Double latitude,
         Double longitude,
