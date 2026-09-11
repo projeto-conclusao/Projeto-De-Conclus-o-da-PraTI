@@ -31,7 +31,7 @@ function BasicFilters(){
     function pegarValorInput(categoria, valor){
        setValor((valorAnterior) => ({
         ...valorAnterior,
-        [categoria.toUpperCase()]: valor.toUpperCase()
+        [categoria.toUpperCase()]: valor !== '' ? valor.toUpperCase() : false
        })); 
     }
 

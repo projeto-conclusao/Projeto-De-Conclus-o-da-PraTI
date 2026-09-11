@@ -18,7 +18,7 @@ function DateRange({placeholder, arrow, close, change}){
             onCalendarClose={() => {setCalendarVisible(false)} } />
 
             {!calendarVisible ? <img className='arrow' src={arrow} alt="" /> : <img className='arrow up' src={arrow} alt="" /> }
-            <img className='x' onClick={() => {setData([null, null])}} src={close} alt="" />
+            <img className='x' onClick={() => {setData([null, null]), change('DATA', '')}} src={close} alt="" />
         </div>
     ) 
 }

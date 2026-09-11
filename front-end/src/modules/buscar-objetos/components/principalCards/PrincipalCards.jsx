@@ -13,6 +13,8 @@ import checkGreen from '../../../../assets/icons/buscarObjetos/check-green.svg';
 import hourglassOrange from '../../../../assets/icons/buscarObjetos/hourglass-orange.svg';
 import arrowBlue from '../../../../assets/icons/buscarObjetos/arrow-blue.svg';
 
+// falta adicionar logica de filtrar por periodo
+
 // Vai receber de buscarObjetos.jsx depois
 const objetos = [
     {
@@ -153,32 +155,59 @@ const objetos = [
 function PrincipalCards({/* objetos */ inicio, fim}){ 
 
     const {state} = useFilter();
+    const {primaryFilters, secondaryFilters} = state;
 
     
     function filtros(valor){
 
+        let posicao = 0;
+
         const categorias = ['OBJETO', 'LOCALIZAÇÃO', 'CATEGORIA', 'PERÍODO'];
+        const objetos = ['nome', '', 'categoria', 'dataOcorrencia']; 
 
-        const {primaryFilters, secondaryFilters} = state;
+        const objetosAprovados = {}
 
+        categorias.map((valorCategorias) => {
 
-        // se tiver o filtro e tiver incluido em categorias e valor  / valor = objetos 
-        if(!secondaryFilters  || secondaryFilters === 'TODOS' && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]])) {return valor} 
-        if(valor.status === secondaryFilters.slice(0,7) && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]]) ) {return valor}
-        if(valor.status === secondaryFilters.slice(0,10) && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]])) {return valor}
+            if(valorCategorias === 'LOCALIZAÇÃO'){
 
+                if (!valor.cidade.toUpperCase().includes(primaryFilters[valorCategorias]) && !valor.endereco.toUpperCase().includes(primaryFilters[valorCategorias])) {objetosAprovados[valorCategorias] = false}
+                if (valor.cidade.toUpperCase().includes(primaryFilters[valorCategorias]) || valor.endereco.toUpperCase().includes(primaryFilters[valorCategorias])) {objetosAprovados[valorCategorias] = true}
 
-        if (objetoVazio(primaryFilters)){ 
-            if (!secondaryFilters  || secondaryFilters === 'TODOS') {return valor}
-            if (valor.status === secondaryFilters.slice(0,7) || valor.status === secondaryFilters.slice(0,10) ) { return valor }
+            } else {
+
+                if(!valor[objetos[posicao]].toUpperCase().includes(primaryFilters[valorCategorias] )) { objetosAprovados[valorCategorias] = false }
+                if(valor[objetos[posicao]].toUpperCase().includes(primaryFilters[valorCategorias]) ) {objetosAprovados[valorCategorias] = true}
+                
+            }
+    
+            posicao ++
+        }); 
+
+        if(!objetoVazio(objetosAprovados)){
+
+            // if a quantidade de objetos preenchidos for a mesma de objetos aprovados, então ele filtra
+
+            const aprovados = []
+            const preenchidos = []
+
+            for(let p in primaryFilters){
+                if (primaryFilters[p]) {preenchidos.push(p)};
+            }
+
+           for(let i in objetosAprovados){        
+                if (objetosAprovados[i]) {aprovados.push(i)};
+            }
+
+            // se não tiver nenhum preenchido nem aprovado ele filtra pelos secondaryFilters direto
+            if(preenchidos.length === aprovados.length){
+                if(!secondaryFilters || secondaryFilters === 'TODOS'){ return (valor)}
+                if(valor.status === secondaryFilters.slice(0,7)){ return (valor)}
+                if(valor.status === secondaryFilters.slice(0,10)){return (valor)}
+
+                // logica dos mais recentes e relevantes
+            }
         }
-
-        
-
-        // implementar filtro de mais recente e relevante
-
-
-        
     }
 
     function verificaIconStatus(status){

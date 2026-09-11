@@ -38,7 +38,7 @@ function Dropdown({id, placeholder, options, arrow, close, change }){
                 </button>
 
                 {!dropdownVisible ? <img className='arrow' onClick={alternarDropdown} src={arrow} alt="" /> : <img className='arrow up' onClick={alternarDropdown} src={arrow} alt="" /> }
-                <img className='x' onClick={() => {alternarOption(null)}} src={close} alt="" />
+                <img className='x'  onClick={() => {alternarOption(null), change('CATEGORIA', '')}}  src={close} alt="" />
 
                 {dropdownVisible && dropdownContent }
             </div>         
