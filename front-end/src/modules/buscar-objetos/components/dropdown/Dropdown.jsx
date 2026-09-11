@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './dropdown.css';
 
-function Dropdown({id, placeholder, options, arrow, close }){
+function Dropdown({id, placeholder, options, arrow, close, change }){
 
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null); 
@@ -21,7 +21,7 @@ function Dropdown({id, placeholder, options, arrow, close }){
 
             {options.map((value) => ( 
 
-                <div className='dropdown__itens' onClick={() => {alternarOption(value.nome)}}>
+                <div className='dropdown__itens' onClick={() => {alternarOption(value.nome), change('CATEGORIA', value.nome)}}>
                        <p> {value.nome } </p>
                 </div>
                 

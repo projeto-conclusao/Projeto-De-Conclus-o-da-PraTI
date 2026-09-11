@@ -4,7 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
 import './dateRange.css';
 
-function DateRange({placeholder, arrow, close}){
+function DateRange({placeholder, arrow, close, change}){
     const [data, setData] = useState([null, null])
     const [calendarVisible, setCalendarVisible] = useState(false)
     
@@ -13,9 +13,9 @@ function DateRange({placeholder, arrow, close}){
     return (
         <div className="calendar">
             <DatePicker className="input__filter date" selectsRange startDate={dataInicial} endDate={dataFinal} 
-            placeholderText={placeholder} dateFormat={'dd/MM/yyyy'} onChange={(date) => {setData(date)}}
+            placeholderText={placeholder} dateFormat={'dd/MM/yyyy'} onChange={(date) => {setData(date), change('DATA', `${date}`)}}
             minDate={new Date('01/01/2026')} onCalendarOpen ={() => {setCalendarVisible(true)}} 
-            onCalendarClose={() => {setCalendarVisible(false)}} />
+            onCalendarClose={() => {setCalendarVisible(false)} } />
 
             {!calendarVisible ? <img className='arrow' src={arrow} alt="" /> : <img className='arrow up' src={arrow} alt="" /> }
             <img className='x' onClick={() => {setData([null, null])}} src={close} alt="" />

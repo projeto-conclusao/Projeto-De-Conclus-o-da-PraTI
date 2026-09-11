@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router'; 
+import { useFilter }  from '../../../../hooks/buscarObjetos/filterHook.jsx'; 
 import './secondaryFilters.css'; 
 
 import todosWhite from '../../../../assets/icons/buscarObjetos/grid-white.png';
@@ -14,7 +15,7 @@ import encontradosBlack from '../../../../assets/icons/buscarObjetos/lupa-black.
 import clockBlack from '../../../../assets/icons/buscarObjetos/clock-black.svg';
 import starBlack from '../../../../assets/icons/buscarObjetos/star-black.png';
 
-import filtros from './secondaryFilters.json'; 
+import filtros from './secondaryFilters.json';
 
 const icons = {
     todosWhite,
@@ -34,7 +35,11 @@ function SecondaryFilters(){
     const [ativo, setAtivo] = useState('Todos');
     const [tema] = useOutletContext();
 
+    const {dispatch} = useFilter();
+
+
     function alternarAtivo(value){
+        dispatch({ type: 'add', value: value.toUpperCase() })
         setAtivo(value);
     }
 

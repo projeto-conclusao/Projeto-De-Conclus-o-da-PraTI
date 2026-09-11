@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useFilter } from '../../../../hooks/buscarObjetos/filterHook.jsx';
+import { objetoVazio } from '../../../../utils/validators.js';
 import { NavLink } from 'react-router'; 
+
 
 import './principalCards.css'; 
 
@@ -99,7 +102,7 @@ const objetos = [
     {
         id: 2,
         imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrY_4KkPEHad6YFRowx4F7glLuwXbCigLZPQVC0I1P1pF5EFCB5zYq-8c&s=10',
-        nome: 'Bola de Basquete Poker', 
+        nome: 'Carteira de Basquete Poker', 
         status: 'ENCONTRADO',
         categoria: 'Bolas', 
         icon_url: 'https://img.icons8.com/?size=100&id=kK2OkfQGPS4B&format=png&color=737373',
@@ -123,7 +126,7 @@ const objetos = [
     {
         id: 2,
         imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrY_4KkPEHad6YFRowx4F7glLuwXbCigLZPQVC0I1P1pF5EFCB5zYq-8c&s=10',
-        nome: 'Bola de Basquete Poker', 
+        nome: 'Carteira de Basquete Poker', 
         status: 'ENCONTRADO',
         categoria: 'Bolas', 
         icon_url: 'https://img.icons8.com/?size=100&id=kK2OkfQGPS4B&format=png&color=737373',
@@ -135,8 +138,8 @@ const objetos = [
     {
         id: 2,
         imagem: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrY_4KkPEHad6YFRowx4F7glLuwXbCigLZPQVC0I1P1pF5EFCB5zYq-8c&s=10',
-        nome: 'Bola de Basquete Poker', 
-        status: 'ENCONTRADO',
+        nome: 'Carteira de Basquete Poker', 
+        status: 'PERDIDO',
         categoria: 'Bolas', 
         icon_url: 'https://img.icons8.com/?size=100&id=kK2OkfQGPS4B&format=png&color=737373',
         descricaoBreve: 'Iphone 13 azul com pequenos sinais de uso, encontrada próxima ao Posto 8 da praia de Ipanema verde',
@@ -148,6 +151,35 @@ const objetos = [
 ]
 
 function PrincipalCards({/* objetos */ inicio, fim}){ 
+
+    const {state} = useFilter();
+
+    
+    function filtros(valor){
+
+        const categorias = ['OBJETO', 'LOCALIZAÇÃO', 'CATEGORIA', 'PERÍODO'];
+
+        const {primaryFilters, secondaryFilters} = state;
+
+
+        // se tiver o filtro e tiver incluido em categorias e valor  / valor = objetos 
+        if(!secondaryFilters  || secondaryFilters === 'TODOS' && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]])) {return valor} 
+        if(valor.status === secondaryFilters.slice(0,7) && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]]) ) {return valor}
+        if(valor.status === secondaryFilters.slice(0,10) && valor.nome.toUpperCase().includes(primaryFilters[categorias[0]])) {return valor}
+
+
+        if (objetoVazio(primaryFilters)){ 
+            if (!secondaryFilters  || secondaryFilters === 'TODOS') {return valor}
+            if (valor.status === secondaryFilters.slice(0,7) || valor.status === secondaryFilters.slice(0,10) ) { return valor }
+        }
+
+        
+
+        // implementar filtro de mais recente e relevante
+
+
+        
+    }
 
     function verificaIconStatus(status){
             if (status === 'PERDIDO'){ return warningRed  }
@@ -163,7 +195,7 @@ function PrincipalCards({/* objetos */ inicio, fim}){
 
     return (
         <div>
-            {objetos.slice(inicio, fim).map((valor) => {
+            {objetos.filter((valor) => { return filtros(valor)}).slice(inicio, fim).map((valor) => {
                 return (<div className='card__principal'>
                             <img className='image__card ' src={valor.imagem} />
 
