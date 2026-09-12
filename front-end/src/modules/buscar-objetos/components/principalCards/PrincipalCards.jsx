@@ -148,7 +148,7 @@ const objetos = [
         endereco: 'Ipanema',
         cidade: 'Rio de Janeiro',
         dataOcorrencia: 'Hoje, 12:30'
-    },
+    }
 
 ]
 
@@ -163,7 +163,7 @@ function PrincipalCards({/* objetos */ inicio, fim}){
         let posicao = 0;
 
         const categorias = ['OBJETO', 'LOCALIZAÇÃO', 'CATEGORIA', 'PERÍODO'];
-        const objetos = ['nome', '', 'categoria', 'dataOcorrencia']; 
+        const objetos = ['nome', '', '', 'dataOcorrencia']; 
 
         const objetosAprovados = {}
 
@@ -171,42 +171,70 @@ function PrincipalCards({/* objetos */ inicio, fim}){
 
             if(valorCategorias === 'LOCALIZAÇÃO'){
 
-                if (!valor.cidade.toUpperCase().includes(primaryFilters[valorCategorias]) && !valor.endereco.toUpperCase().includes(primaryFilters[valorCategorias])) {objetosAprovados[valorCategorias] = false}
-                if (valor.cidade.toUpperCase().includes(primaryFilters[valorCategorias]) || valor.endereco.toUpperCase().includes(primaryFilters[valorCategorias])) {objetosAprovados[valorCategorias] = true}
+                if (!primaryFilters[valorCategorias]) { return }
+
+                const input = primaryFilters[valorCategorias].toUpperCase().split(' ');
+                const bancoDados1 = valor.cidade.toUpperCase(); 
+                const bancoDados2 = valor.endereco.toUpperCase(); 
+
+                // every funciona igual o filter, a diferenca é que o filter retorna um novo array, o every retorna um boolean
+
+                const encontrados = input.every((valorEncontrados) => {
+                        return bancoDados1.includes(valorEncontrados) || bancoDados2.includes(valorEncontrados);
+                }); 
+
+                objetosAprovados[valorCategorias] = encontrados
+
+            } else if (valorCategorias === 'CATEGORIA'){
+
+                if (!primaryFilters[valorCategorias]) { return }
+
+                const input = primaryFilters[valorCategorias].toUpperCase();
+                const bancoDados = valor.categoria.toUpperCase(); 
+
+               if(bancoDados.includes(input)) { objetosAprovados[valorCategorias] = false }
+               if(bancoDados.includes(input) ) {objetosAprovados[valorCategorias] = true}
 
             } else {
 
-                if(!valor[objetos[posicao]].toUpperCase().includes(primaryFilters[valorCategorias] )) { objetosAprovados[valorCategorias] = false }
-                if(valor[objetos[posicao]].toUpperCase().includes(primaryFilters[valorCategorias]) ) {objetosAprovados[valorCategorias] = true}
-                
-            }
+                if (!primaryFilters[valorCategorias]) { return }
     
+                const input = primaryFilters[valorCategorias].toUpperCase().split(' ');
+                const bancoDados = valor[objetos[posicao]].toUpperCase(); 
+
+                const encontrados = input.every((valorEncontrados) => {
+                        return bancoDados.includes(valorEncontrados);
+                })
+
+                objetosAprovados[valorCategorias] = encontrados
+
+            }   
+            
             posicao ++
+    
         }); 
 
-        if(!objetoVazio(objetosAprovados)){
+        // if a quantidade de objetos preenchidos for a mesma de objetos aprovados, então ele filtra
 
-            // if a quantidade de objetos preenchidos for a mesma de objetos aprovados, então ele filtra
+        const aprovados = []
+        const preenchidos = []
 
-            const aprovados = []
-            const preenchidos = []
+        for(let p in primaryFilters){
+            if (primaryFilters[p]) {preenchidos.push(p)};
+        }
 
-            for(let p in primaryFilters){
-                if (primaryFilters[p]) {preenchidos.push(p)};
-            }
+        for(let i in objetosAprovados){        
+            if (objetosAprovados[i]) {aprovados.push(i)};
+        }
 
-           for(let i in objetosAprovados){        
-                if (objetosAprovados[i]) {aprovados.push(i)};
-            }
+        // se não tiver nenhum preenchido nem aprovado ele filtra pelos secondaryFilters direto
+        if(preenchidos.length === aprovados.length){
+            if(!secondaryFilters || secondaryFilters === 'TODOS'){ return (valor)}
+            if(valor.status === secondaryFilters.slice(0,7)){ return (valor)}
+            if(valor.status === secondaryFilters.slice(0,10)){return (valor)}
 
-            // se não tiver nenhum preenchido nem aprovado ele filtra pelos secondaryFilters direto
-            if(preenchidos.length === aprovados.length){
-                if(!secondaryFilters || secondaryFilters === 'TODOS'){ return (valor)}
-                if(valor.status === secondaryFilters.slice(0,7)){ return (valor)}
-                if(valor.status === secondaryFilters.slice(0,10)){return (valor)}
+            // logica dos mais recentes e relevantes
 
-                // logica dos mais recentes e relevantes
-            }
         }
     }
 
